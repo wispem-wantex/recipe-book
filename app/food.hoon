@@ -1,6 +1,8 @@
 /-  *food
 /+  default-agent, dbug, schooner, server, *food-init, fmt, *food-utils
 ::
+/*  styles-css  %css  /app/styles/css
+::
 |%
 +$  versioned-state
   $%  state-0
@@ -104,6 +106,11 @@
           %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
         ==
         ::
+          [%apps %server %static *]
+        ?.  ?=  %'GET'  method.request.inbound-request
+          [(send [405 ~ [%stock ~]]) state]
+        [(send (handle-static (slag 3 `(list @ta)`site))) state]  :: Delegate to static handler
+        ::
           [%apps %server %ingredients ~]
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
@@ -148,6 +155,9 @@
           =/  food  (snag 0 `(list food)`-)                   :: First item from the found list
           =/  sailhtml
             ;html
+              ;head
+                ;link(rel "stylesheet", href "/apps/server/static/styles/css");
+              ==
               ;body
                 ;h1: {(trip name:food)}
                 ;+  (form-for food)
@@ -172,6 +182,14 @@
               new-food(id id:f)  :: This is kind of gross(?)
           ==
         ==
+      ==
+    ::
+    ++  handle-static
+      |=  [site=(list @ta)]
+      ^-  http-response:schooner
+      ?+  site  [404 ~ [%stock ~]]
+          [%styles %css ~]
+        [200 ~ [%css styles-css]]
       ==
     --
   --

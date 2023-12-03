@@ -1,0 +1,12 @@
+div.labelled-input {
+	display: flex;
+}
+
+div.labelled-input label {
+	flex-basis: 0;
+	flex-grow: 2;
+}
+div.labelled-input input {
+	flex-basis: 0;
+	flex-grow: 2;
+}

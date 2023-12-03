@@ -22,13 +22,22 @@
     [%audio-mpeg p=@]
     [%audio-wav p=@]
     [%image-png p=@]
+    [%css p=@ta]
   ==
 ::
 +$  http-status  @ud
++$  http-response
+  $:  =http-status
+      =headers
+      =resource
+  ==
 ::
 ++  response
-  |=  [=eyre-id =http-status =headers =resource]
+  |=  [=eyre-id =http-response]
   ^-  (list card:agent:gall)
+  =/  http-status  http-status:http-response
+  =/  headers  headers:http-response
+  =/  resource  resource:http-response
   %+  give-simple-payload:app:server
     eyre-id
   ^-  simple-payload:http
@@ -47,6 +56,11 @@
     :_  `(as-octs:mimes:html p.resource)
     :-  http-status
     (weld headers ['content-type'^'image/png']~)
+    ::
+      %css
+    :_  `(as-octs:mimes:html p.resource)
+    :-  http-status
+    (weld headers ['content-type'^'text/css']~)
     ::
       %manx
     :-  :-  http-status
