@@ -4,6 +4,7 @@
 :: such as density.  `cook_ratio` is how much it shrinks after cooking (e.g., 0.7 means 100g of it
 :: will be 70g after cooking).
 +$  food
+  $+  food-type
   $:  id=@
       name=@t
       calories=@rs

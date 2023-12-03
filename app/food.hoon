@@ -1,5 +1,5 @@
 /-  *food
-/+  default-agent, dbug, schooner, server, *food-init
+/+  default-agent, dbug, schooner, server, *food-init, fmt, *food-utils
 ::
 |%
 +$  versioned-state
@@ -33,7 +33,7 @@
   ^-  (quip card _this)
   :_  this(state blank-state-2)  :: Initialize to a new blank state
   :~
-    [%pass /eyre/connect %arvo %e %connect `/apps/server %food]
+    [%pass /eyre/connect %arvo %e %connect [~ /apps/server] %food]
   ==
 ::  
 ++  on-save
@@ -72,54 +72,73 @@
     ?.  authenticated.inbound-request
       :_  state  %-  send  [302 ~ [%login-redirect '/apps/server']]
     ::
-    ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
-        %'GET'
-      =/  sailhtml
-        ;html
-          ;body
-            ;h1: Hi!
-            ;p
-              ; Hello, world
+    |^
+      ?+  site  [(send [404 ~ [%stock ~]]) state]
+          [%apps %server ~]
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'GET'
+          =/  sailhtml
+            ;html
+              ;body
+                ;h1: Hi!
+                ;p
+                  ; Hello, world
+                ==
+                ;form(action "/apps/server/add-item", method "POST")
+                  ;label: Add new item
+                  ;input(type "text", name "item");
+                  ;input(type "submit", value "Submit");
+                ==
+                ;h3: Items (so far)
+                ;ul
+                  ;*  %+  turn  foods:state
+                    |=  [=food]
+                    ;li: {(trip name:food)}
+                ==
+                ;form(action "/apps/server/clear", method "POST")
+                  ;input(type "submit", value "Clear all items");
+                ==
+              ==
             ==
-            ;form(action "/apps/server/add-item", method "POST")
-              ;label: Add new item
-              ;input(type "text", name "item");
-              ;input(type "submit", value "Submit");
-            ==
-            ;h3: Items (so far)
-            ;ul
-              ;*  %+  turn  foods:state
-                |=  [=food]
-                ;li: {(trip name:food)}
-            ==
-            ;form(action "/apps/server/clear", method "POST")
-              ;input(type "submit", value "Clear all items");
-            ==
-          ==
+          :_  state
+          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
         ==
-      :_  state
-      %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
-      ::
-        %'POST'
-      ?+  site  :_  state  %-  send  [404 ~ [%none ~]]
-          [%apps %server %add-item ~]
-        ?~  body.request.inbound-request
-          :_  state  %-  send  [400 ~ [%plain "'item' required"]]
-        =/  parsed=(unit (list [key=@t value=@t]))  (rush q.u.body.request.inbound-request yquy:de-purl:html)
-        ?~  parsed
-          :_  state  %-  send  [400 ~ [%plain "'item' required"]]
-        =/  item  (get-header:http 'item' (need parsed))
-        ?~  item
-          :_  state  %-  send  [400 ~ [%plain "'item' required"]]
-        =/  newfood  *food
-        :_  state(foods (snoc foods newfood(id now.bowl, name (need item))))
-        %-  send  [302 ~ [%redirect '/apps/server']]
         ::
-        ::  [%apps %server %clear ~]
-        :::-  %-  send  [302 ~ [%redirect '/apps/server']]
-        ::state(items *(list @ta))
+          [%apps %server %ingredients ~]
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'GET'
+          =/  sailhtml
+            ;html
+              ;body
+                ;h1: Ingredients
+                ;table
+                  ;thead
+                    ;*  %+  turn  `(list tape)`["Name" "Cals" "Carbs" "Protein" "Fat" "Sugar" ~]
+                      |=  [labl=tape]
+                      ;th: {labl}
+                  ==
+                  ;tbody
+                    ;*  %+  turn  foods:state
+                      |=  [=food]
+                      ;tr
+                        ;td
+                          ;a(href (url-path-for food)): {(trip name:food)}
+                        ==
+                        ;td: {(format:fmt calories:food)}
+                        ;td: {(format:fmt carbs:food)}
+                        ;td: {(format:fmt protein:food)}
+                        ;td: {(format:fmt fat:food)}
+                        ;td: {(format:fmt sugar:food)}
+                      ==
+                  ==
+                ==
+              ==
+            ==
+          :_  state
+          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
+        ==
       ==
-    ==
+    --
   --
 ::
 :: Each time Eyre pokes a request to us, it will subscribe for the response.  We will just accept
