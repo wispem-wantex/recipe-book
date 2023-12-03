@@ -6,20 +6,16 @@
 |%
 +$  versioned-state
   $%  state-0
-      state-1
-      state-2
   ==
-+$  state-0  [%0 ~]
-+$  state-1  [%1 items=(list @t)]
-+$  state-2  [%2 foods=(list food) recipes=(list recipe)]
++$  state-0  [%0 foods=(list food) recipes=(list recipe)]
 ::
-++  blank-state-2  [%2 foods=initial-foods recipes=*(list recipe)]
+++  blank-state-0  [%0 foods=initial-foods recipes=*(list recipe)]
 +$  card  card:agent:gall
 --
 ::
 :: All the boilerplate gibberish
 %-  agent:dbug
-=|  state-2
+=|  state-0
 =*  state  -
 ^-  agent:gall
 |_  =bowl:gall
@@ -33,7 +29,7 @@
 :: take us to that path if you click this desk's tile in landscape.
 ++  on-init
   ^-  (quip card _this)
-  :_  this(state blank-state-2)  :: Initialize to a new blank state
+  :_  this(state blank-state-0)  :: Initialize to a new blank state
   :~
     [%pass /eyre/connect %arvo %e %connect [~ /apps/server] %food]
   ==
@@ -48,9 +44,7 @@
   =/  old  !<(versioned-state old-state)
   |-
     ?-  -.old
-      %0  $(old *state-1)       :: drop it and reinit the state
-      %1  $(old blank-state-2)  :: drop it and reinit the state
-      %2  `this(state old)      :: All up to date; keep it as is
+      %0  `this(state old)       :: drop it and reinit the state
     ==
 ::
 ++  on-poke

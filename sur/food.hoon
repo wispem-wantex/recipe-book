@@ -43,7 +43,9 @@
 ::
 :: A recipe is a list of ingredients and a list of instructions
 +$  recipe
-  $:  ingredients=(list ingredient)
+  $:  id=@
+      name=@ta
+      ingredients=(list ingredient)
       instructions=(list @t)
   ==
 --
