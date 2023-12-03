@@ -9,6 +9,12 @@
   ^-  tape
   (weld "/apps/server/ingredients/" (scow %ud id:food))
 ::
+:: Given a recipe, produce its URL path
+++  url-path-for-recipe
+  |=  [=recipe]
+  ^-  tape
+  (weld "/apps/server/recipes/" (trip (en:base16:mimes:html [8 id:recipe])))
+::
 :: Given a food, generate Sail HTML for a form to edit it
 ++  form-for
   |=  [=food]
@@ -49,19 +55,20 @@
     ~
   (rush q.u.body.req yquy:de-purl:html)
 ::
+++  get-form-value
+  |=  [haystack=(list [key=@t value=@t]) needle=@t]
+  ^-  (unit @t)
+  ?~  haystack
+    ~
+  ?:  =(key:(head haystack) needle)
+    [~ value:(head haystack)]
+  $(haystack (tail haystack))
+::
 :: Parse a food body
 ++  parse-food
   |=  [data=(list [key=@t value=@t])]
   ^-  food
-  =/  find-item
-    |=  [item=@t]
-    ^-  @t
-    ?~  data
-      !!  :: Not our problem
-    ?:  =(key:(head data) item)
-      value:(head data)
-    $(data (tail data))
-  ::
+  =/  find-item  |=(val=@t (need (get-form-value data val)))
   :*  id=0
       name=(find-item 'name')
       calories=(unformat:fmt (find-item 'calories'))

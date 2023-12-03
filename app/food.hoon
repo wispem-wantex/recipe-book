@@ -176,6 +176,82 @@
               new-food(id id:f)  :: This is kind of gross(?)
           ==
         ==
+        ::
+          [%apps %server %recipes ~]
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'GET'
+          =/  sailhtml
+            ;html
+              ;body
+                ;h1: Recipes
+                ;input(type "submit", value "New recipe", onclick "window.location.pathname = '/apps/server/recipes/new'");
+                ;ul
+                  ;*  %+  turn  recipes:state
+                    |=  [=recipe]
+                    ;li: {(trip name:recipe)}
+                ==
+              ==
+            ==
+          :_  state
+          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
+        ==
+        ::
+          [%apps %server %recipes %new ~]
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'GET'
+          =/  sailhtml
+            ;html
+              ;body
+                ;h1: New Recipe
+                ;form(method "POST")
+                  ;input(type "text", name "name");
+                  ;input(type "submit", value "Create");
+                ==
+              ==
+            ==
+          :_  state
+          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
+          ::
+            %'POST'
+          =/  data  (parse-form-body request.inbound-request)
+          ?~  data
+            :_  state  %-  send  [400 ~ [%plain "No data received"]]
+          =/  name  (need (get-form-value (need data) 'name'))
+          ?~  name
+            :_  state  %-  send  [400 ~ [%plain "'name' field is required"]]
+          =/  =recipe  *recipe
+          =.  name.recipe  name
+          =.  id.recipe  (mod eny.bowl 0xffff.ffff.ffff.ffff)
+          :-
+            %-  send  [302 ~ [%redirect (crip (url-path-for-recipe recipe))]]
+          %=  state
+            recipes  (snoc recipes recipe)
+          ==
+        ==
+        ::
+          [%apps %server %recipes *]
+        =/  the-id  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'GET'
+          ::
+          =+  (skim recipes:state |=(=recipe =(id:recipe the-id)))  :: Find the recipe
+          ?~  -  :_  state  [(send [404 ~ [%stock ~]])]             :: 404 if it's not found
+          =/  recipe  (snag 0 `(list recipe)`-)                     :: First item from the found list
+          =/  sailhtml
+            ;html
+              ;head
+                ;link(rel "stylesheet", href "/apps/server/static/styles/css");
+              ==
+              ;body
+                ;h1: {(trip name:recipe)}
+              ==
+            ==
+          :_  state
+          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
+          ::
+          ::  %'POST'
+          :: TODO
+        ==
       ==
     ::
     ++  handle-static
