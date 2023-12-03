@@ -18,7 +18,7 @@
 :: All the boilerplate gibberish
 %-  agent:dbug
 =|  state-2
-=*  state  - 
+=*  state  -
 ^-  agent:gall
 |_  =bowl:gall
 +*  this  .
@@ -35,7 +35,7 @@
   :~
     [%pass /eyre/connect %arvo %e %connect [~ /apps/server] %food]
   ==
-::  
+::
 ++  on-save
   ^-  vase
   !>(state)
@@ -136,6 +136,41 @@
             ==
           :_  state
           %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
+        ==
+        ::
+          [%apps %server %ingredients *]
+        =/  the-id  +:(scan (trip (snag 3 `(list @t)`site)) bisk:so)
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'GET'
+          ::
+          =+  (skim foods:state |=(=food =(id:food the-id)))  :: Find the food
+          ?~  -  :_  state  [(send [404 ~ [%stock ~]])]       :: 404 if it's not found
+          =/  food  (snag 0 `(list food)`-)                   :: First item from the found list
+          =/  sailhtml
+            ;html
+              ;body
+                ;h1: {(trip name:food)}
+                ;+  (form-for food)
+              ==
+            ==
+          :_  state
+          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
+          ::
+            %'POST'
+          =/  data  (parse-form-body request.inbound-request)
+          ?~  data
+            :_  state  %-  send  [400 ~ [%plain "No data received"]]
+          :-
+            %-  send  [302 ~ [%redirect '/apps/server/ingredients']]
+          %=  state
+            foods  %+  turn  foods
+              |=  [f=food]
+              ^-  food
+              ?.  =(id:f the-id)
+                f
+              =/  new-food  (parse-food (need data))
+              new-food(id id:f)  :: This is kind of gross(?)
+          ==
         ==
       ==
     --
