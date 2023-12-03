@@ -1,18 +1,23 @@
-/+  default-agent, dbug, schooner, server
+/-  *food
+/+  default-agent, dbug, schooner, server, *food-init
 ::
 |%
 +$  versioned-state
   $%  state-0
       state-1
+      state-2
   ==
 +$  state-0  [%0 ~]
 +$  state-1  [%1 items=(list @t)]
++$  state-2  [%2 foods=(list food) recipes=(list recipe)]
+::
+++  blank-state-2  [%2 foods=initial-foods recipes=*(list recipe)]
 +$  card  card:agent:gall
 --
 ::
 :: All the boilerplate gibberish
 %-  agent:dbug
-=|  state-1
+=|  state-2
 =*  state  - 
 ^-  agent:gall
 |_  =bowl:gall
@@ -26,7 +31,7 @@
 :: take us to that path if you click this desk's tile in landscape.
 ++  on-init
   ^-  (quip card _this)
-  :_  this
+  :_  this(state blank-state-2)  :: Initialize to a new blank state
   :~
     [%pass /eyre/connect %arvo %e %connect `/apps/server %food]
   ==
@@ -39,10 +44,12 @@
   |=  old-state=vase
   ^-  (quip card _this)
   =/  old  !<(versioned-state old-state)
-  ?-  -.old
-    %0  `this(state *state-1)
-    %1  `this(state old)
-  ==
+  |-
+    ?-  -.old
+      %0  $(old *state-1)       :: drop it and reinit the state
+      %1  $(old blank-state-2)  :: drop it and reinit the state
+      %2  `this(state old)      :: All up to date; keep it as is
+    ==
 ::
 ++  on-poke
   |=  [=mark =vase]
@@ -81,9 +88,9 @@
             ==
             ;h3: Items (so far)
             ;ul
-              ;*  %+  turn  items:state
-                |=  [item=@t]
-                ;li: {(trip item)}
+              ;*  %+  turn  foods:state
+                |=  [=food]
+                ;li: {(trip name:food)}
             ==
             ;form(action "/apps/server/clear", method "POST")
               ;input(type "submit", value "Clear all items");
@@ -104,11 +111,13 @@
         =/  item  (get-header:http 'item' (need parsed))
         ?~  item
           :_  state  %-  send  [400 ~ [%plain "'item' required"]]
-        :_  state(items (snoc items (need item)))
+        =/  newfood  *food
+        :_  state(foods (snoc foods newfood(id now.bowl, name (need item))))
         %-  send  [302 ~ [%redirect '/apps/server']]
-          [%apps %server %clear ~]
-        :-  %-  send  [302 ~ [%redirect '/apps/server']]
-        state(items *(list @ta))
+        ::
+        ::  [%apps %server %clear ~]
+        :::-  %-  send  [302 ~ [%redirect '/apps/server']]
+        ::state(items *(list @ta))
       ==
     ==
   --
@@ -123,7 +132,6 @@
       [%http-response *]
     `this
   ==
-::
 ::
 :: Arvo will respond when we initially connect to Eyre in `on-init`.  We will accept (and ignore)
 :: that and reject any other communications.
