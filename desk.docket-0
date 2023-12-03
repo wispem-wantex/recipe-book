@@ -1,0 +1,9 @@
+:~  title+'Food'
+    info+'A thing with some stuffs'
+    color+0x10.0032
+    base+'food'
+    site+/apps/server
+    version+[1 0 1]
+    website+'https://github.com/wispem-wantex/recipes'
+    license+'MIT'
+==
