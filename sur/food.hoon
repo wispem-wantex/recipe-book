@@ -27,6 +27,9 @@
       price=@rs
       cook-ratio=@rs
   ==
++$  foods
+  $+  food-list
+  (map food-id food)
 ::
 :: Units of measurement that you can use to denominate an ingredient amount
 +$  units
@@ -52,4 +55,7 @@
       ingredients=(list ingredient)
       instructions=(list @t)
   ==
++$  recipes
+  $+  recipe-list
+  (map recipe-id recipe)
 --

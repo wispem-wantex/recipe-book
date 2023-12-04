@@ -90,4 +90,52 @@
       price=.0.0
       cook-ratio=.0
   ==
+::
+:: Convert an ingredient to a pair [amount=@rs =food]
++$  normalized-ingredient  [amount=@rs =food]
+++  normalize-ingredient
+  |=  [i=ingredient all-foods=foods]
+  ^-  normalized-ingredient
+  =/  base-food  (need (~(get by all-foods) food-id:i))
+  ?-  units.amount.i
+    %g     [amount=(div:rs -:amount:i mass:base-food) food=base-food]
+    %ml    !!
+    %ct    [amount=-:amount:i food=base-food]
+  ==
+::
+:: Compute the nutrition for an ingredient
+::++  ingredient-to-food
+::  |=  [i=ingredient all-foods=foods]
+::  ^-  food
+
+::
+:: Compute the totals for a recipe
+++  recipe-to-food
+  |=  [=recipe all-foods=foods]
+  ^-  food
+  =/  all-ingredients  %+  turn
+        ingredients:recipe
+      |=(i=ingredient (normalize-ingredient i all-foods))
+      ::(curr normalize-ingredient all-foods)
+  :*  id=0
+      name=name:recipe
+      calories=(roll (turn all-ingredients |=(n=normalized-ingredient (mul:rs amount:n calories:food:n))) add:rs)
+      carbs=(roll (turn all-ingredients |=(n=normalized-ingredient (mul:rs amount:n carbs:food:n))) add:rs)
+      protein=(roll (turn all-ingredients |=(n=normalized-ingredient (mul:rs amount:n protein:food:n))) add:rs)
+      fat=(roll (turn all-ingredients |=(n=normalized-ingredient (mul:rs amount:n fat:food:n))) add:rs)
+      sugar=(roll (turn all-ingredients |=(n=normalized-ingredient (mul:rs amount:n sugar:food:n))) add:rs)
+      alcohol=.0.0
+      water=.0.0
+      potassium=.0.0
+      sodium=.0.0
+      calcium=.0.0
+      magnesium=.0.0
+      phosphorus=.0.0
+      iron=.0.0
+      zinc=.0.0
+      mass=.100.0
+      density=.-1.0
+      price=.0.0
+      cook-ratio=.0
+  ==
 --
