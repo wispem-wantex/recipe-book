@@ -9,7 +9,17 @@
   ==
 +$  state-0  [%0 foods=(list food) recipes=(list recipe)]
 ::
-++  blank-state-0  [%0 foods=initial-foods recipes=*(list recipe)]
+++  blank-state-0
+  :*  %0
+      initial-foods
+      ^-  (list recipe)  :~
+          :*  id=q:(need (de:base16:mimes:html 'de32bc69c2e6b69f'))
+              name='My First Recipe'
+              ingredients=:~(`ingredient`[44 [.100 %g]] `ingredient`[75 [.200 %g]] `ingredient`[252 [.3 %g]])
+              instructions=:~('Add the beef' 'add the chicken' 'spice it with cinnamon')
+      ==  ==
+  ==
+::
 +$  card  card:agent:gall
 --
 ::
@@ -76,23 +86,15 @@
           =/  sailhtml
             ;html
               ;body
-                ;h1: Hi!
-                ;p
-                  ; Hello, world
-                ==
-                ;form(action "/apps/server/add-item", method "POST")
-                  ;label: Add new item
-                  ;input(type "text", name "item");
-                  ;input(type "submit", value "Submit");
-                ==
-                ;h3: Items (so far)
+                ;h1: Recipe book
+                ;p: Check out:
                 ;ul
-                  ;*  %+  turn  foods:state
-                    |=  [=food]
-                    ;li: {(trip name:food)}
-                ==
-                ;form(action "/apps/server/clear", method "POST")
-                  ;input(type "submit", value "Clear all items");
+                  ;li
+                    ;a(href "/apps/server/recipes"): Recipes
+                  ==
+                  ;li
+                    ;a(href "/apps/server/ingredients"): Ingredients
+                  ==
                 ==
               ==
             ==
@@ -188,7 +190,9 @@
                 ;ul
                   ;*  %+  turn  recipes:state
                     |=  [=recipe]
-                    ;li: {(trip name:recipe)}
+                    ;li
+                      ;a(href (url-path-for-recipe recipe)): {(trip name:recipe)}
+                    ==
                 ==
               ==
             ==
@@ -229,7 +233,7 @@
           ==
         ==
         ::
-          [%apps %server %recipes *]
+          [%apps %server %recipes @ ~]
         =/  the-id  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
@@ -244,13 +248,153 @@
               ==
               ;body
                 ;h1: {(trip name:recipe)}
+                ;form(action (weld (url-path-for-recipe recipe) "/rename"), method "POST")
+                  ;input(type "text", name "new-name");
+                  ;input(type "submit", value "Rename recipe");
+                ==
+                ;table
+                  ;thead
+                    ;th: Amount
+                    ;th: Ingredient
+                    ;th: Calories
+                    ;th: Carbs
+                    ;th: Protein
+                    ;th: Fat
+                    ;th: Sugar
+                  ==
+                  ;tbody
+                    ;*  %+  turn  ingredients:recipe
+                      |=  [=ingredient]
+                      =/  base-food  (snag 0 `(list food)`(skim foods:state |=(=food =(id:food food-id:ingredient))))
+                      =/  amount  ?-  units.amount.ingredient
+                          %g  (div:rs -:amount:ingredient mass:base-food)
+                          %ml  !!
+                          %ct  -:amount:ingredient
+                        ==
+                      =/  units-txt  ?-  units.amount.ingredient
+                          %g   "g"
+                          %ml  !!
+                          %ct  ""
+                        ==
+                      =/  amount-display=@rs  ?-  units.amount.ingredient
+                          %g   (mul:rs amount mass:base-food)
+                          %ml  !!
+                          %ct  amount
+                        ==
+                      ;tr
+                        ;td: {(format:fmt amount-display)} {units-txt}
+                        ;td: {(trip name:base-food)}
+                        ;td: {(format:fmt (mul:rs calories:base-food amount))}
+                        ;td: {(format:fmt (mul:rs carbs:base-food amount))}
+                        ;td: {(format:fmt (mul:rs protein:base-food amount))}
+                        ;td: {(format:fmt (mul:rs fat:base-food amount))}
+                        ;td: {(format:fmt (mul:rs sugar:base-food amount))}
+                      ==
+                  ==
+                ==
+                ;form(action (weld (url-path-for-recipe recipe) "/add-ingredient"), method "POST")
+                  ;label: Ingredient
+                  ;input(type "text", name "food-id");
+                  ;label: Amount
+                  ;input(type "text", name "amount");
+                  ;label: Units
+                  ;input(type "text", name "units");
+                  ;input(type "submit", value "Add ingredient");
+                ==
+                ;h2: Instructions
+                ;ol
+                  ;*  %+  turn  instructions:recipe
+                    |=  [instr=@t]
+                    ;li: {(trip instr)}
+                ==
+                ;form(action (weld (url-path-for-recipe recipe) "/add-instr"), method "POST")
+                  ;input(type "text", name "instr");
+                  ;input(type "submit", value "Add instruction");
+                ==
               ==
             ==
           :_  state
           %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
-          ::
-          ::  %'POST'
-          :: TODO
+        ==
+        ::
+          [%apps %server %recipes @ %add-instr ~]
+        =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'POST'
+          =+  (skim recipes:state |=(=recipe =(id:recipe the-id)))  :: Find the recipe
+          ?~  -  :_  state  [(send [404 ~ [%stock ~]])]             :: 404 if it's not found
+          =/  the-recipe=recipe  (snag 0 `(list recipe)`-)          :: First item from the found list
+          =/  data  (parse-form-body request.inbound-request)
+          ?~  data
+            :_  state  %-  send  [400 ~ [%plain "No data received"]]
+          :-
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+          %=  state
+            recipes  %+  turn  recipes
+              |=  [r=recipe]
+              ^-  recipe
+              ?.  =(id.r the-id)
+                r
+              r(instructions (snoc instructions:r (need (get-form-value (need data) 'instr'))))
+          ==
+        ==
+        ::
+          [%apps %server %recipes @ %add-ingredient ~]
+        =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'POST'
+          =+  (skim recipes:state |=(=recipe =(id:recipe the-id)))  :: Find the recipe
+          ?~  -  :_  state  [(send [404 ~ [%stock ~]])]             :: 404 if it's not found
+          =/  the-recipe=recipe  (snag 0 `(list recipe)`-)          :: First item from the found list
+          =/  data  (parse-form-body request.inbound-request)
+          ?~  data
+            :_  state  %-  send  [400 ~ [%plain "No data received"]]
+          ~&  >>>  data
+          :-
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+          %=  state
+            recipes  %+  turn  recipes
+              |=  [r=recipe]
+              ^-  recipe
+              ?.  =(id.r the-id)
+                r
+              %=  r
+                ingredients  %+  snoc  ingredients:r  ^-  ingredient
+                  :-
+                    food-id=(scan (trip (need (get-form-value (need data) 'food-id'))) dem)
+                  :-  (sun:rs (scan (trip (need (get-form-value (need data) 'amount'))) dem))
+                  ?+  (need (get-form-value (need data) 'units'))  !!
+                      %g
+                    %g
+                      %ml
+                    %ml
+                      %ct
+                    %ct
+                  ==
+              ==
+          ==
+        ==
+        ::
+          [%apps %server %recipes @ %rename ~]
+        =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'POST'
+          =+  (skim recipes:state |=(=recipe =(id:recipe the-id)))  :: Find the recipe
+          ?~  -  :_  state  [(send [404 ~ [%stock ~]])]             :: 404 if it's not found
+          =/  the-recipe=recipe  (snag 0 `(list recipe)`-)          :: First item from the found list
+          =/  data  (parse-form-body request.inbound-request)
+          ?~  data
+            :_  state  %-  send  [400 ~ [%plain "No data received"]]
+          :-
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+          %=  state
+            recipes  %+  turn  recipes
+              |=  [r=recipe]
+              ^-  recipe
+              ?.  =(id.r the-id)
+                r
+              r(name (need (get-form-value (need data) 'new-name')))
+          ==
         ==
       ==
     ::

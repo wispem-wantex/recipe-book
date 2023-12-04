@@ -3,9 +3,10 @@
 :: A `food` is a piece of food.  It has a specified unit size (mass) and other physical parameters
 :: such as density.  `cook_ratio` is how much it shrinks after cooking (e.g., 0.7 means 100g of it
 :: will be 70g after cooking).
++$  food-id  @
 +$  food
   $+  food-type
-  $:  id=@
+  $:  id=food-id
       name=@t
       calories=@rs
       carbs=@rs
@@ -37,13 +38,16 @@
 ::
 :: An `ingredient` is an amount of a food.
 +$  ingredient
+  $+  ingredient-type
   $:  food-id=@
       amount=[=@rs =units]  :: e.g., [100 %g] => 100 grams; [3 %ct] => three of them
   ==
 ::
-:: A recipe is a list of ingredients and a list of instructions
+:: A recipe is a list of ingredients and a list of instructions, with a name
++$  recipe-id  @
 +$  recipe
-  $:  id=@
+  $+  recipe-type
+  $:  id=recipe-id
       name=@ta
       ingredients=(list ingredient)
       instructions=(list @t)
