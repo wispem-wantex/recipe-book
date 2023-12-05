@@ -33,7 +33,7 @@
 ^-  agent:gall
 |_  =bowl:gall
 +*  this  .
-    def   ~(. (default-agent this %.n) bowl)
+    def   ~(. (default-agent this) bowl)
 ::
 :: Register this agent for handling incoming HTTP requests at the path /apps/server.   This
 :: allows us to serve a web front end without needing a "glob".

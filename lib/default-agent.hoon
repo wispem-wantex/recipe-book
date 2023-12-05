@@ -1,8 +1,4 @@
-/+  skeleton
-|*  [agent=* help=*]
-?:  ?=(%& help)
-  ~|  %default-agent-helpfully-crashing
-  skeleton
+|=  [agent=agent:gall]
 |_  =bowl:gall
 ++  on-init
   `agent
