@@ -2,7 +2,7 @@
 ++  format
   |=  [num=@rs]
   ^-  tape
-  (slag 1 (scow %rs num))
+  (slag 2 (scow %s (need (toi:rs num))))
 ++  unformat
   |=  [str=@t]
   ^-  @rs

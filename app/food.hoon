@@ -306,7 +306,12 @@
                 ==
                 ;form(action (weld (url-path-for-recipe recipe) "/add-ingredient"), method "POST")
                   ;label: Ingredient
-                  ;input(type "text", name "food-id");
+                  ;input(type "text", list "ingredient-options", name "food-id");
+                  ;datalist(id "ingredient-options")
+                    ;*  %+  turn  ~(val by foods:state)
+                      |=  [=food]
+                      ;option(value (scow %ud id.food)): {(trip name.food)}
+                  ==
                   ;label: Amount
                   ;input(type "text", name "amount");
                   ;label: Units
