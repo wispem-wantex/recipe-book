@@ -268,17 +268,14 @@
                       =/  base-food  (need (~(get by foods:state) food-id:ingredient))
                       =/  amount  ?-  units.amount.ingredient
                           %g  (div:rs -:amount:ingredient mass:base-food)
-                          %ml  !!
                           %ct  -:amount:ingredient
                         ==
                       =/  units-txt  ?-  units.amount.ingredient
                           %g   "g"
-                          %ml  !!
                           %ct  ""
                         ==
                       =/  amount-display=@rs  ?-  units.amount.ingredient
                           %g   (mul:rs amount mass:base-food)
-                          %ml  !!
                           %ct  amount
                         ==
                       ;tr
@@ -373,8 +370,6 @@
               ?+  (need (get-form-value (need data) 'units'))  !!
                   %g
                 %g
-                  %ml
-                %ml
                   %ct
                 %ct
               ==

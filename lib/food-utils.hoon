@@ -99,7 +99,6 @@
   =/  base-food  (need (~(get by all-foods) food-id:i))
   ?-  units.amount.i
     %g     [amount=(div:rs -:amount:i mass:base-food) food=base-food]
-    %ml    !!
     %ct    [amount=-:amount:i food=base-food]
   ==
 ::
