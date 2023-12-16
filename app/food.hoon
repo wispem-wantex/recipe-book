@@ -254,6 +254,7 @@
                 ==
                 ;table
                   ;thead
+                    ;th;  :: "X" button
                     ;th: Amount
                     ;th: Ingredient
                     ;th: Calories
@@ -263,8 +264,9 @@
                     ;th: Sugar
                   ==
                   ;tbody
-                    ;*  %+  turn  ingredients:recipe
-                      |=  [=ingredient]
+                    ;*  %-  head  %-  spin  :+  ingredients:recipe  0
+                      |=  [=ingredient index=@]
+                      :_  +(index)
                       =/  base-food  (need (~(get by foods:state) food-id:ingredient))
                       =/  amount  ?-  units.amount.ingredient
                           %g  (div:rs -:amount:ingredient mass:base-food)
@@ -279,8 +281,13 @@
                           %ct  amount
                         ==
                       ;tr
+                        ;td
+                          ;form(action (weld (url-path-for-recipe recipe) "/delete-ingredient/{<index>}"), method "POST", class "x-button")
+                            ;input(type "submit", value "\d7", title "Delete ingredient");
+                          ==
+                        ==
                         ;td: {(format:fmt amount-display)} {units-txt}
-                        ;td: {(trip name:base-food)}
+                        ;td(class "ingr-name"): {(trip name:base-food)}
                         ;td: {(format:fmt (mul:rs calories:base-food amount))}
                         ;td: {(format:fmt (mul:rs carbs:base-food amount))}
                         ;td: {(format:fmt (mul:rs protein:base-food amount))}
@@ -292,16 +299,17 @@
                       =/  recipe-food  (recipe-to-food recipe foods)
                     ;tr
                       ;td;
-                      ;td: Total
-                      ;td: {(format:fmt calories:recipe-food)}
-                      ;td: {(format:fmt carbs:recipe-food)}
-                      ;td: {(format:fmt protein:recipe-food)}
-                      ;td: {(format:fmt fat:recipe-food)}
-                      ;td: {(format:fmt sugar:recipe-food)}
+                      ;td;
+                      ;td(class "total"): Total
+                      ;td(class "total"): {(format:fmt calories:recipe-food)}
+                      ;td(class "total"): {(format:fmt carbs:recipe-food)}
+                      ;td(class "total"): {(format:fmt protein:recipe-food)}
+                      ;td(class "total"): {(format:fmt fat:recipe-food)}
+                      ;td(class "total"): {(format:fmt sugar:recipe-food)}
                     ==
                   ==
                 ==
-                ;form(action (weld (url-path-for-recipe recipe) "/add-ingredient"), method "POST")
+                ;form(action (weld (url-path-for-recipe recipe) "/add-ingredient"), method "POST", class "add-ingr")
                   ;label: Ingredient
                   ;input(type "text", list "ingredient-options", name "food-id");
                   ;datalist(id "ingredient-options")
@@ -319,10 +327,19 @@
                   ;input(type "submit", value "Add ingredient");
                 ==
                 ;h2: Instructions
-                ;ol
-                  ;*  %+  turn  instructions:recipe
-                    |=  [instr=@t]
-                    ;li: {(trip instr)}
+                ;ol(class "instructions-list")
+                  ;*  %-  head  %-  spin  :+  instructions:recipe  0
+                    |=  [instr=@t index=@]
+                    :_  +(index)
+                    ;li
+                      ;form(action (weld (url-path-for-recipe recipe) "/delete-instruction/{<index>}"), method "POST", class "x-button")
+                        ;input(type "submit", value "\d7", title "Delete instruction");
+                      ==
+                      ;span(class "instr-number"): {(a-co:co (add 1 index))}.
+                      ;span
+                        ; {(trip instr)}
+                      ==
+                    ==
                 ==
                 ;form(action (weld (url-path-for-recipe recipe) "/add-instr"), method "POST")
                   ;input(type "text", name "instr");
@@ -353,6 +370,23 @@
           ==
         ==
         ::
+          [%apps %server %recipes @ %delete-instruction @ ~]
+        =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
+        =/  instruction-index  (rash (snag 5 `(list @t)`site) dem)
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'POST'
+          =+  (~(get by recipes:state) the-id)                :: Find the recipe
+          ?~  -  :_  state  [(send [404 ~ [%stock ~]])]       :: 404 if it's not found
+          =/  the-recipe  (need -)                            :: First item from the found list
+          :-
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+          %=  state
+            recipes  %+  ~(put by recipes)
+              the-id
+            the-recipe(instructions (oust [instruction-index 1] instructions:the-recipe))
+          ==
+        ==
+        ::
           [%apps %server %recipes @ %add-ingredient ~]
         =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
@@ -380,6 +414,23 @@
             recipes  %+  ~(put by recipes)
               id.the-recipe
             the-recipe(ingredients (snoc ingredients:the-recipe new-ingredient))
+          ==
+        ==
+        ::
+          [%apps %server %recipes @ %delete-ingredient @ ~]
+        =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
+        =/  ingredient-index  (rash (snag 5 `(list @t)`site) dem)
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'POST'
+          =+  (~(get by recipes:state) the-id)                :: Find the recipe
+          ?~  -  :_  state  [(send [404 ~ [%stock ~]])]       :: 404 if it's not found
+          =/  the-recipe  (need -)                            :: First item from the found list
+          :-
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+          %=  state
+            recipes  %+  ~(put by recipes)
+              the-id
+            the-recipe(ingredients (oust [ingredient-index 1] ingredients:the-recipe))
           ==
         ==
         ::

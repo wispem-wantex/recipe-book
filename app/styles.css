@@ -10,3 +10,48 @@ div.labelled-input input {
 	flex-basis: 0;
 	flex-grow: 2;
 }
+
+table {
+	border-collapse: collapse;
+}
+th {
+	padding: 0 0.3em;
+}
+td {
+	text-align: right;
+	padding: 0.3em 0.6em;
+}
+
+td.ingr-name {
+	text-align: left;
+}
+
+td.total {
+	border-top: 1px solid darkgray;
+}
+
+form.x-button {
+	display: inline;
+	margin: 0;
+}
+form.x-button input {
+	padding: 0.1em 0.3em;
+}
+
+form.add-ingr input[type='text'] {
+    margin: 0 0.5em 0 0.2em;
+}
+
+ol.instructions-list {
+	padding: 0 1em;
+}
+
+ol.instructions-list li {
+	list-style: none;
+	display: flex;
+	align-items: center;
+	margin: 0.3em 0;
+}
+ol.instructions-list li .instr-number{
+    margin: 0 0.5em 0 1em;
+}
