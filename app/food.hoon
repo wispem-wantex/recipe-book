@@ -312,7 +312,10 @@
                   ;label: Amount
                   ;input(type "text", name "amount");
                   ;label: Units
-                  ;input(type "text", name "units");
+                  ;select(name "units")
+                    ;option(value "g"): g
+                    ;option(value "ct"): count
+                  ==
                   ;input(type "submit", value "Add ingredient");
                 ==
                 ;h2: Instructions
