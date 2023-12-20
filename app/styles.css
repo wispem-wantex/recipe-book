@@ -1,14 +1,30 @@
+body {
+	display: flex;
+	flex-direction: row;
+}
+nav {
+	width: 10%;
+    border-right: 1px solid #ddd;
+}
+main {
+	flex-grow: 1;
+	margin-right: 10%;
+    padding-left: 2em;
+}
+
+input[type='text'], select, textarea {
+    margin: 0 0.5em 0 0.2em;
+}
+
 div.labelled-input {
 	display: flex;
 }
 
 div.labelled-input label {
-	flex-basis: 0;
-	flex-grow: 2;
+	flex-basis: 4em;
 }
 div.labelled-input input {
-	flex-basis: 0;
-	flex-grow: 2;
+	flex-basis: 30em;
 }
 
 table {
@@ -38,20 +54,23 @@ form.x-button input {
 	padding: 0.1em 0.3em;
 }
 
-form.add-ingr input[type='text'] {
-    margin: 0 0.5em 0 0.2em;
+form.add-instr {
+    display: flex;
+    align-items: flex-end;
 }
 
-ol.instructions-list {
+ol#instructions {
 	padding: 0 1em;
 }
 
-ol.instructions-list li {
+ol#instructions li {
 	list-style: none;
 	display: flex;
 	align-items: center;
 	margin: 0.3em 0;
 }
-ol.instructions-list li .instr-number{
+ol#instructions li .instr-number{
     margin: 0 0.5em 0 1em;
+    cursor: move;
+    cursor: -webkit-grab;
 }

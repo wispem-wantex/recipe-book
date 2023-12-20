@@ -86,23 +86,22 @@
           [%apps %server ~]
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
-          =/  sailhtml
-            ;html
-              ;body
-                ;h1: Recipe book
-                ;p: Check out:
-                ;ul
-                  ;li
-                    ;a(href "/apps/server/recipes"): Recipes
-                  ==
-                  ;li
-                    ;a(href "/apps/server/ingredients"): Ingredients
-                  ==
+          :_  state
+          %-  send
+            =;  sailhtml
+              [200 ~ (render-sail-html "Home" sailhtml)]
+            :~
+              ;h1: Recipe book
+              ;p: Check out:
+              ;ul
+                ;li
+                  ;a(href "/apps/server/recipes"): Recipes
+                ==
+                ;li
+                  ;a(href "/apps/server/ingredients"): Ingredients
                 ==
               ==
             ==
-          :_  state
-          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
         ==
         ::
           [%apps %server %static *]
@@ -113,35 +112,34 @@
           [%apps %server %ingredients ~]
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
-          =/  sailhtml
-            ;html
-              ;body
-                ;h1: Ingredients
-                ;table
-                  ;thead
-                    ;*  %+  turn  `(list tape)`["Name" "Cals" "Carbs" "Protein" "Fat" "Sugar" ~]
-                      |=  [labl=tape]
-                      ;th: {labl}
-                  ==
-                  ;tbody
-                    ;*  %+  turn  ~(val by foods:state)
-                      |=  [=food]
-                      ;tr
-                        ;td
-                          ;a(href (url-path-for food)): {(trip name:food)}
-                        ==
-                        ;td: {(format:fmt calories:food)}
-                        ;td: {(format:fmt carbs:food)}
-                        ;td: {(format:fmt protein:food)}
-                        ;td: {(format:fmt fat:food)}
-                        ;td: {(format:fmt sugar:food)}
+          :_  state
+          %-  send
+            =;  sailhtml
+              [200 ~ (render-sail-html "Ingredients" sailhtml)]
+            :~
+              ;h1: Ingredients
+              ;table
+                ;thead
+                  ;*  %+  turn  `(list tape)`["Name" "Cals" "Carbs" "Protein" "Fat" "Sugar" ~]
+                    |=  [labl=tape]
+                    ;th: {labl}
+                ==
+                ;tbody
+                  ;*  %+  turn  ~(val by foods:state)
+                    |=  [=food]
+                    ;tr
+                      ;td
+                        ;a(href (url-path-for food)): {(trip name:food)}
                       ==
-                  ==
+                      ;td: {(format:fmt calories:food)}
+                      ;td: {(format:fmt carbs:food)}
+                      ;td: {(format:fmt protein:food)}
+                      ;td: {(format:fmt fat:food)}
+                      ;td: {(format:fmt sugar:food)}
+                    ==
                 ==
               ==
             ==
-          :_  state
-          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
         ==
         ::
           [%apps %server %ingredients @ ~]
@@ -149,21 +147,43 @@
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
           ::
-          =+  (~(get by foods:state) the-id)                :: Find the recipe
-          ?~  -  :_  state  [(send [404 ~ [%stock ~]])]     :: 404 if it's not found
-          =/  food  (need -)                                :: First item from the found list
-          =/  sailhtml
-            ;html
-              ;head
-                ;link(rel "stylesheet", href "/apps/server/static/styles/css");
-              ==
-              ;body
-                ;h1: {(trip name:food)}
-                ;+  (form-for food)
+          :_  state
+          =+  (~(get by foods:state) the-id)     :: Find the recipe
+          ?~  -  [(send [404 ~ [%stock ~]])]     :: 404 if it's not found
+          =/  food  (need -)                     :: First item from the found list
+          %-  send
+            =;  sailhtml
+              [200 ~ (render-sail-html "Ingredient: {(trip name.food)}" sailhtml)]
+            :~
+              ;h1: {(trip name:food)}
+              ;form(action (url-path-for food), method "POST")
+                ;div(class "labelled-input")
+                  ;label: Name:
+                  ;input(type "text", name "name", value (trip name:food));
+                ==
+                ;div(class "labelled-input")
+                  ;label: Calories:
+                  ;input(type "text", name "calories", value (format:fmt calories:food));
+                ==
+                ;div(class "labelled-input")
+                  ;label: Carbs:
+                  ;input(type "text", name "carbs", value (format:fmt carbs:food));
+                ==
+                ;div(class "labelled-input")
+                  ;label: Protein:
+                  ;input(type "text", name "protein", value (format:fmt protein:food));
+                ==
+                ;div(class "labelled-input")
+                  ;label: Fat:
+                  ;input(type "text", name "fat", value (format:fmt fat:food));
+                ==
+                ;div(class "labelled-input")
+                  ;label: Sugar:
+                  ;input(type "text", name "sugar", value (format:fmt sugar:food));
+                ==
+                ;input(type "submit", value "Save");
               ==
             ==
-          :_  state
-          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
           ::
             %'POST'
           =/  data  (parse-form-body request.inbound-request)
@@ -182,39 +202,37 @@
           [%apps %server %recipes ~]
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
-          =/  sailhtml
-            ;html
-              ;body
-                ;h1: Recipes
-                ;input(type "submit", value "New recipe", onclick "window.location.pathname = '/apps/server/recipes/new'");
-                ;ul
-                  ;*  %+  turn  ~(val by recipes:state)
-                    |=  [=recipe]
-                    ;li
-                      ;a(href (url-path-for-recipe recipe)): {(trip name:recipe)}
-                    ==
-                ==
+          :_  state
+          %-  send
+            =;  sailhtml
+              [200 ~ (render-sail-html "Recipes" sailhtml)]
+            :~
+              ;h1: Recipes
+              ;input(type "submit", value "New recipe", onclick "window.location.pathname = '/apps/server/recipes/new'");
+              ;ul
+                ;*  %+  turn  ~(val by recipes:state)
+                  |=  [=recipe]
+                  ;li
+                    ;a(href (url-path-for-recipe recipe)): {(trip name:recipe)}
+                  ==
               ==
             ==
-          :_  state
-          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
         ==
         ::
           [%apps %server %recipes %new ~]
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
-          =/  sailhtml
-            ;html
-              ;body
-                ;h1: New Recipe
-                ;form(method "POST")
-                  ;input(type "text", name "name");
-                  ;input(type "submit", value "Create");
-                ==
+          :_  state
+          %-  send
+            =;  sailhtml
+              [200 ~ (render-sail-html "New recipe" sailhtml)]
+            :~
+              ;h1: New Recipe
+              ;form(method "POST")
+                ;input(type "text", name "name");
+                ;input(type "submit", value "Create");
               ==
             ==
-          :_  state
-          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
           ::
             %'POST'
           =/  data  (parse-form-body request.inbound-request)
@@ -238,117 +256,125 @@
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
           ::
-          =+  (~(get by recipes:state) the-id)                :: Find the recipe
-          ?~  -  :_  state  [(send [404 ~ [%stock ~]])]       :: 404 if it's not found
-          =/  recipe  (need -)                                :: First item from the found list
-          =/  sailhtml
-            ;html
-              ;head
-                ;link(rel "stylesheet", href "/apps/server/static/styles/css");
-              ==
-              ;body
-                ;h1: {(trip name:recipe)}
-                ;form(action (weld (url-path-for-recipe recipe) "/rename"), method "POST")
-                  ;input(type "text", name "new-name");
-                  ;input(type "submit", value "Rename recipe");
-                ==
-                ;table
-                  ;thead
-                    ;th;  :: "X" button
-                    ;th: Amount
-                    ;th: Ingredient
-                    ;th: Calories
-                    ;th: Carbs
-                    ;th: Protein
-                    ;th: Fat
-                    ;th: Sugar
-                  ==
-                  ;tbody
-                    ;*  %-  head  %-  spin  :+  ingredients:recipe  0
-                      |=  [=ingredient index=@]
-                      :_  +(index)
-                      =/  base-food  (need (~(get by foods:state) food-id:ingredient))
-                      =/  amount  ?-  units.amount.ingredient
-                          %g  (div:rs -:amount:ingredient mass:base-food)
-                          %ct  -:amount:ingredient
-                        ==
-                      =/  units-txt  ?-  units.amount.ingredient
-                          %g   "g"
-                          %ct  ""
-                        ==
-                      =/  amount-display=@rs  ?-  units.amount.ingredient
-                          %g   (mul:rs amount mass:base-food)
-                          %ct  amount
-                        ==
-                      ;tr
-                        ;td
-                          ;form(action (weld (url-path-for-recipe recipe) "/delete-ingredient/{<index>}"), method "POST", class "x-button")
-                            ;input(type "submit", value "\d7", title "Delete ingredient");
-                          ==
-                        ==
-                        ;td: {(format:fmt amount-display)} {units-txt}
-                        ;td(class "ingr-name"): {(trip name:base-food)}
-                        ;td: {(format:fmt (mul:rs calories:base-food amount))}
-                        ;td: {(format:fmt (mul:rs carbs:base-food amount))}
-                        ;td: {(format:fmt (mul:rs protein:base-food amount))}
-                        ;td: {(format:fmt (mul:rs fat:base-food amount))}
-                        ;td: {(format:fmt (mul:rs sugar:base-food amount))}
-                      ==
-                    ::
-                    ;+
-                      =/  recipe-food  (recipe-to-food recipe foods)
-                    ;tr
-                      ;td;
-                      ;td;
-                      ;td(class "total"): Total
-                      ;td(class "total"): {(format:fmt calories:recipe-food)}
-                      ;td(class "total"): {(format:fmt carbs:recipe-food)}
-                      ;td(class "total"): {(format:fmt protein:recipe-food)}
-                      ;td(class "total"): {(format:fmt fat:recipe-food)}
-                      ;td(class "total"): {(format:fmt sugar:recipe-food)}
-                    ==
-                  ==
-                ==
-                ;form(action (weld (url-path-for-recipe recipe) "/add-ingredient"), method "POST", class "add-ingr")
-                  ;label: Ingredient
-                  ;input(type "text", list "ingredient-options", name "food-id");
-                  ;datalist(id "ingredient-options")
-                    ;*  %+  turn  ~(val by foods:state)
-                      |=  [=food]
-                      ;option(value (scow %ud id.food)): {(trip name.food)}
-                  ==
-                  ;label: Amount
-                  ;input(type "text", name "amount");
-                  ;label: Units
-                  ;select(name "units")
-                    ;option(value "g"): g
-                    ;option(value "ct"): count
-                  ==
-                  ;input(type "submit", value "Add ingredient");
-                ==
-                ;h2: Instructions
-                ;ol(class "instructions-list")
-                  ;*  %-  head  %-  spin  :+  instructions:recipe  0
-                    |=  [instr=@t index=@]
-                    :_  +(index)
-                    ;li
-                      ;form(action (weld (url-path-for-recipe recipe) "/delete-instruction/{<index>}"), method "POST", class "x-button")
-                        ;input(type "submit", value "\d7", title "Delete instruction");
-                      ==
-                      ;span(class "instr-number"): {(a-co:co (add 1 index))}.
-                      ;span
-                        ; {(trip instr)}
-                      ==
-                    ==
-                ==
-                ;form(action (weld (url-path-for-recipe recipe) "/add-instr"), method "POST")
-                  ;input(type "text", name "instr");
-                  ;input(type "submit", value "Add instruction");
-                ==
-              ==
-            ==
           :_  state
-          %-  send  [200 ~ [%html (crip (en-xml:html sailhtml))]]
+          =+  (~(get by recipes:state) the-id)     :: Find the recipe
+          ?~  -  [(send [404 ~ [%stock ~]])]       :: 404 if it's not found
+          =/  recipe  (need -)                     :: First item from the found list
+          %-  send
+            =;  sailhtml
+              [200 ~ (render-sail-html (trip name.recipe) sailhtml)]
+            :~
+              ;script(src "https://raw.githack.com/SortableJS/Sortable/master/Sortable.js");
+              ;h1: {(trip name:recipe)}
+              ;form(action (weld (url-path-for-recipe recipe) "/rename"), method "POST")
+                ;input(type "text", name "new-name");
+                ;input(type "submit", value "Rename recipe");
+              ==
+              ;table
+                ;thead
+                  ;th;  :: "X" button
+                  ;th: Amount
+                  ;th: Ingredient
+                  ;th: Calories
+                  ;th: Carbs
+                  ;th: Protein
+                  ;th: Fat
+                  ;th: Sugar
+                ==
+                ;tbody
+                  ;*  %-  head  %-  spin  :+  ingredients:recipe  0
+                    |=  [=ingredient index=@]
+                    :_  +(index)
+                    =/  base-food  (need (~(get by foods:state) food-id:ingredient))
+                    =/  amount  ?-  units.amount.ingredient
+                        %g  (div:rs -:amount:ingredient mass:base-food)
+                        %ct  -:amount:ingredient
+                      ==
+                    =/  units-txt  ?-  units.amount.ingredient
+                        %g   "g"
+                        %ct  ""
+                      ==
+                    =/  amount-display=@rs  ?-  units.amount.ingredient
+                        %g   (mul:rs amount mass:base-food)
+                        %ct  amount
+                      ==
+                    ;tr
+                      ;td
+                        ;form(action (weld (url-path-for-recipe recipe) "/delete-ingredient/{<index>}"), method "POST", class "x-button")
+                          ;input(type "submit", value "\d7", title "Delete ingredient");
+                        ==
+                      ==
+                      ;td: {(format:fmt amount-display)} {units-txt}
+                      ;td(class "ingr-name"): {(trip name:base-food)}
+                      ;td: {(format:fmt (mul:rs calories:base-food amount))}
+                      ;td: {(format:fmt (mul:rs carbs:base-food amount))}
+                      ;td: {(format:fmt (mul:rs protein:base-food amount))}
+                      ;td: {(format:fmt (mul:rs fat:base-food amount))}
+                      ;td: {(format:fmt (mul:rs sugar:base-food amount))}
+                    ==
+                  ::
+                  ;+
+                    =/  recipe-food  (recipe-to-food recipe foods)
+                  ;tr
+                    ;td;
+                    ;td;
+                    ;td(class "total"): Total:
+                    ;td(class "total"): {(format:fmt calories:recipe-food)}
+                    ;td(class "total"): {(format:fmt carbs:recipe-food)}
+                    ;td(class "total"): {(format:fmt protein:recipe-food)}
+                    ;td(class "total"): {(format:fmt fat:recipe-food)}
+                    ;td(class "total"): {(format:fmt sugar:recipe-food)}
+                  ==
+                ==
+              ==
+              ;form(action (weld (url-path-for-recipe recipe) "/add-ingredient"), method "POST", class "add-ingr")
+                ;label: Ingredient:
+                ;input(type "text", list "ingredient-options", name "food-id");
+                ;datalist(id "ingredient-options")
+                  ;*  %+  turn  ~(val by foods:state)
+                    |=  [=food]
+                    ;option(value (scow %ud id.food)): {(trip name.food)}
+                ==
+                ;label: Amount:
+                ;input(type "text", name "amount");
+                ;label: Units:
+                ;select(name "units")
+                  ;option(value "g"): g
+                  ;option(value "ct"): count
+                ==
+                ;input(type "submit", value "Add ingredient");
+              ==
+              ;h2: Instructions
+              ;ol(id "instructions")
+                ;*  %-  head  %-  spin  :+  instructions:recipe  0
+                  |=  [instr=@t index=@]
+                  :_  +(index)
+                  ;li
+                    ;form(action (weld (url-path-for-recipe recipe) "/delete-instr/{<index>}"), method "POST", class "x-button")
+                      ;input(type "submit", value "\d7", title "Delete instruction");
+                    ==
+                    ;span(class "instr-number"): {(a-co:co (add 1 index))}.
+                    ;span
+                      ; {(trip instr)}
+                    ==
+                  ==
+              ==
+              ;form(action (weld (url-path-for-recipe recipe) "/add-instr"), method "POST", class "add-instr")
+                ;textarea(name "instr", rows "3", cols "50");
+                ;input(type "submit", value "Add instruction");
+              ==
+              =;  thescript
+                ;script: {(trip thescript)}
+                '''
+                Sortable.create(instructions, {
+                  handle: ".instr-number",
+                  onEnd: function(evt) {
+                    console.log(window.location.href + "/move-instr/" + evt.oldIndex + "/" + evt.newIndex);
+                    window.location.href = window.location.href + "/move-instr/" + evt.oldIndex + "/" + evt.newIndex;
+                  },
+                });
+                '''
+            ==
         ==
         ::
           [%apps %server %recipes @ %add-instr ~]
@@ -370,7 +396,34 @@
           ==
         ==
         ::
-          [%apps %server %recipes @ %delete-instruction @ ~]
+          [%apps %server %recipes @ %move-instr @ @ ~]
+        =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
+        =/  from-index  (rash (snag 5 `(list @t)`site) dem)
+        =/  to-index  (rash (snag 6 `(list @t)`site) dem)
+        ~&  >>>  "{<from-index>}, {<to-index>}"
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'GET'
+          =+  (~(get by recipes:state) the-id)                :: Find the recipe
+          ?~  -  :_  state  [(send [404 ~ [%stock ~]])]       :: 404 if it's not found
+          =/  the-recipe  (need -)                            :: First item from the found list
+          :-
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+          %=  state
+            recipes  %+  ~(put by recipes)
+              the-id
+            :: Oust the moved ingredient from "from-index" and put it at "to-index"
+            %=  the-recipe
+              instructions  %:  into
+                (oust [from-index 1] instructions:the-recipe)
+                to-index
+                (snag from-index instructions:the-recipe)
+              ==
+            ==
+          ::`(list ingredient)`(move-list-item instructions:the-recipe from-index to-index))
+          ==
+        ==
+        ::
+          [%apps %server %recipes @ %delete-instr @ ~]
         =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
         =/  instruction-index  (rash (snag 5 `(list @t)`site) dem)
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
@@ -460,6 +513,34 @@
       ?+  site  [404 ~ [%stock ~]]
           [%styles %css ~]
         [200 ~ [%css styles-css]]
+      ==
+    ::
+    ++  render-sail-html
+      |=  [title=tape content=marl]
+      ^-  resource:schooner
+      :-
+        %html
+      %-  crip  %-  en-xml:html
+      ;html
+        ;head
+          ;link(rel "stylesheet", href "/apps/server/static/styles/css");
+          ;title: {title}
+        ==
+        ;body
+          ;nav
+            ;ul
+              ;li
+                ;a(href "/apps/server/ingredients"): Ingredients
+              ==
+              ;li
+                ;a(href "/apps/server/recipes"): Recipes
+              ==
+            ==
+          ==
+          ;main
+            ;*  content
+          ==
+        ==
       ==
     --
   --

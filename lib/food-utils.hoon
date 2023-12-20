@@ -44,7 +44,7 @@
       ;label: Sugar
       ;input(type "text", name "sugar", value (format:fmt sugar:food));
     ==
-    ;input(type "submit", value "Submit");
+    ;input(type "submit", value "Save");
   ==
 ::
 :: Parse a form-encoded body or query string
@@ -54,6 +54,10 @@
   ?~  body.req
     ~
   (rush q.u.body.req yquy:de-purl:html)
+::++  parse-query-string
+::  |=  [req=request:http]
+::  ^-  (list [key=@t value=@t])
+::  +>:(rash theurl auri:de-purl:html)
 ::
 ++  get-form-value
   |=  [haystack=(list [key=@t value=@t]) needle=@t]
@@ -137,4 +141,13 @@
       price=.0.0
       cook-ratio=.0
   ==
+::
+::++  move-list-item
+::  |=  [the-list=(list) from-index=@ to-index=@]
+::  ^-  (list)
+::  %:  into
+::    (oust [from-index 1] the-list)
+::    to-index
+::    (snag from-index the-list)
+::  ==
 --
