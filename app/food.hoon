@@ -118,6 +118,9 @@
               [200 ~ (render-sail-html "Ingredients" sailhtml)]
             :~
               ;h1: Ingredients
+              ;form(action "/apps/server/ingredients/new", method "POST")
+                ;input(type "submit", value "New ingredient");
+              ==
               ;table
                 ;thead
                   ;*  %+  turn  `(list tape)`["Name" "Cals" "Carbs" "Protein" "Fat" "Sugar" ~]
@@ -141,9 +144,21 @@
               ==
             ==
         ==
+          [%apps %server %ingredients %new ~]
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'POST'
+          =/  next-id  (mod eny.bowl 0xffff.ffff.ffff.ffff)
+          =/  new-food  *food
+          =.  id.new-food  next-id
+          :-
+            %-  send  [302 ~ [%redirect (crip (url-path-for new-food))]]
+          %=  state
+            foods  (~(put by foods) next-id new-food)
+          ==
+        ==
         ::
           [%apps %server %ingredients @ ~]
-        =/  the-id  +:(scan (trip (snag 3 `(list @t)`site)) bisk:so)
+        =/  the-id  (scan (trip (snag 3 `(list @t)`site)) dem) ::bisk:so)
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
           ::
@@ -333,7 +348,7 @@
                 ;datalist(id "ingredient-options")
                   ;*  %+  turn  ~(val by foods:state)
                     |=  [=food]
-                    ;option(value (scow %ud id.food)): {(trip name.food)}
+                    ;option(value (a-co:co id.food)): {(trip name.food)}
                 ==
                 ;label: Amount:
                 ;input(type "text", name "amount");

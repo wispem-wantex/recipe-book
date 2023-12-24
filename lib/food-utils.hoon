@@ -7,45 +7,13 @@
 ++  url-path-for
   |=  [=food]
   ^-  tape
-  (weld "/apps/server/ingredients/" (scow %ud id:food))
+  (weld "/apps/server/ingredients/" (a-co:co id:food)) ::(scow %ud id:food))
 ::
 :: Given a recipe, produce its URL path
 ++  url-path-for-recipe
   |=  [=recipe]
   ^-  tape
   (weld "/apps/server/recipes/" (trip (en:base16:mimes:html [8 id:recipe])))
-::
-:: Given a food, generate Sail HTML for a form to edit it
-++  form-for
-  |=  [=food]
-  ^-  manx  :: sail HTML node
-  ;form(action (url-path-for food), method "POST")
-    ;div(class "labelled-input")
-      ;label: Name
-      ;input(type "text", name "name", value (trip name:food));
-    ==
-    ;div(class "labelled-input")
-      ;label: Calories
-      ;input(type "text", name "calories", value (format:fmt calories:food));
-    ==
-    ;div(class "labelled-input")
-      ;label: Carbs
-      ;input(type "text", name "carbs", value (format:fmt carbs:food));
-    ==
-    ;div(class "labelled-input")
-      ;label: Protein
-      ;input(type "text", name "protein", value (format:fmt protein:food));
-    ==
-    ;div(class "labelled-input")
-      ;label: Fat
-      ;input(type "text", name "fat", value (format:fmt fat:food));
-    ==
-    ;div(class "labelled-input")
-      ;label: Sugar
-      ;input(type "text", name "sugar", value (format:fmt sugar:food));
-    ==
-    ;input(type "submit", value "Save");
-  ==
 ::
 :: Parse a form-encoded body or query string
 ++  parse-form-body
