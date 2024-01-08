@@ -2,6 +2,7 @@
 /+  default-agent, dbug, schooner, server, *food-init, fmt, *food-utils, misc-utils
 ::
 /*  styles-css  %css  /app/styles/css
+/*  chili-garlic-png  %png  /app/chili-garlic/png
 ::
 |%
 +$  versioned-state
@@ -598,6 +599,8 @@
       ?+  site  [404 ~ [%stock ~]]
           [%styles %css ~]
         [200 ~ [%css styles-css]]
+          [%chili-garlic %png ~]
+        [200 ~ [%image-png chili-garlic-png]]
       ==
     ::
     ++  render-sail-html
