@@ -160,5 +160,6 @@
     [id=2.334 name='bay leaf' calories=.0.0 carbs=.0.0 protein=.0.0 fat=.0.0 sugar=.0.0 alcohol=.0.0 water=.0.0 potassium=.0.0 sodium=.0.0 calcium=.0.0 magnesium=.0.0 phosphorus=.0.0 iron=.0.0 zinc=.0.0 mass=.100.0 density=.-1.0 price=.0.0 cook-ratio=.0]
     [id=2.363 name='yeast' calories=.0.0 carbs=.0.0 protein=.0.0 fat=.0.0 sugar=.0.0 alcohol=.0.0 water=.0.0 potassium=.0.0 sodium=.0.0 calcium=.0.0 magnesium=.0.0 phosphorus=.0.0 iron=.0.0 zinc=.0.0 mass=.100.0 density=.1.0 price=.0.0 cook-ratio=.1.0]
     [id=2.366 name='collagen powder' calories=.350.0 carbs=.0.0 protein=.90.0 fat=.0.0 sugar=.0.0 alcohol=.0.0 water=.0.0 potassium=.0.0 sodium=.0.35 calcium=.0.0 magnesium=.0.0 phosphorus=.0.0 iron=.0.0 zinc=.0.0 mass=.100.0 density=.1.0 price=.0.0 cook-ratio=.1.0]
+    [id=3.000 name='chicken stock' calories=.22 carbs=.0.4 protein=.2.2 fat=.1.2 sugar=.0.2 alcohol=.0.0 water=.0.0 potassium=.0.105 sodium=.0.140 calcium=.0.003 magnesium=.0.0 phosphorus=.0.0 iron=.0.0002 zinc=.0.0 mass=.100.0 density=.1.0 price=.0.0 cook-ratio=.1.0]
   ==
 --
