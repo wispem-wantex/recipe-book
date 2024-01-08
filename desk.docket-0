@@ -1,9 +1,9 @@
-:~  title+'Food'
-    info+'A thing with some stuffs'
+:~  title+'Recipe book'
+    info+'Keep track of your favorite recipes'
     color+0x10.0032
-    base+'food'
-    site+/apps/server
+    base+'recipe-book'
+    site+/apps/recipe-book
     version+[1 0 1]
-    website+'https://github.com/wispem-wantex/recipes'
+    website+'https://github.com/wispem-wantex/recipe-book'
     license+'MIT'
 ==

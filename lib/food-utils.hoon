@@ -7,13 +7,13 @@
 ++  url-path-for
   |=  [=food]
   ^-  tape
-  (weld "/apps/server/ingredients/" (a-co:co id:food)) ::(scow %ud id:food))
+  (weld "/apps/recipe-book/ingredients/" (a-co:co id:food))
 ::
 :: Given a recipe, produce its URL path
 ++  url-path-for-recipe
   |=  [=recipe]
   ^-  tape
-  (weld "/apps/server/recipes/" (trip (en:base16:mimes:html [8 id:recipe])))
+  (weld "/apps/recipe-book/recipes/" (trip (en:base16:mimes:html [8 id:recipe])))
 ::
 :: Parse a form-encoded body or query string
 ++  parse-form-body

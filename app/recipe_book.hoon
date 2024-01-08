@@ -35,16 +35,16 @@
 +*  this  .
     def   ~(. (default-agent this) bowl)
 ::
-:: Register this agent for handling incoming HTTP requests at the path /apps/server.   This
+:: Register this agent for handling incoming HTTP requests at the path /apps/recipe-book.   This
 :: allows us to serve a web front end without needing a "glob".
 ::
-:: `desk.docket-0` will specify that /apps/server is the entrypoint for this app, so it will
+:: `desk.docket-0` will specify that /apps/recipe-book is the entrypoint for this app, so it will
 :: take us to that path if you click this desk's tile in landscape.
 ++  on-init
   ^-  (quip card _this)
   :_  this(state blank-state-0)  :: Initialize to a new blank state
   :~
-    [%pass /eyre/connect %arvo %e %connect [~ /apps/server] %food]
+    [%pass /eyre/connect %arvo %e %connect [~ /apps/recipe-book] %recipe-book]
   ==
 ::
 ++  on-save
@@ -79,11 +79,11 @@
       (parse-request-line:server url.request.inbound-request)
     =+  send=(cury response:schooner eyre-id)
     ?.  authenticated.inbound-request
-      :_  state  %-  send  [302 ~ [%login-redirect '/apps/server']]
+      :_  state  %-  send  [302 ~ [%login-redirect '/apps/recipe-book']]
     ::
     |^
       ?+  site  [(send [404 ~ [%stock ~]]) state]
-          [%apps %server ~]
+          [%apps %recipe-book ~]
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
           :_  state
@@ -95,21 +95,21 @@
               ;p: Check out:
               ;ul
                 ;li
-                  ;a(href "/apps/server/recipes"): Recipes
+                  ;a(href "/apps/recipe-book/recipes"): Recipes
                 ==
                 ;li
-                  ;a(href "/apps/server/ingredients"): Ingredients
+                  ;a(href "/apps/recipe-book/ingredients"): Ingredients
                 ==
               ==
             ==
         ==
         ::
-          [%apps %server %static *]
+          [%apps %recipe-book %static *]
         ?.  ?=  %'GET'  method.request.inbound-request
           [(send [405 ~ [%stock ~]]) state]
         [(send (handle-static (slag 3 `(list @ta)`site))) state]  :: Delegate to static handler
         ::
-          [%apps %server %ingredients ~]
+          [%apps %recipe-book %ingredients ~]
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
           :_  state
@@ -118,7 +118,7 @@
               [200 ~ (render-sail-html "Ingredients" sailhtml)]
             :~
               ;h1: Ingredients
-              ;form(action "/apps/server/ingredients/new", method "POST")
+              ;form(action "/apps/recipe-book/ingredients/new", method "POST")
                 ;input(type "submit", value "New ingredient");
               ==
               ;table
@@ -144,7 +144,7 @@
               ==
             ==
         ==
-          [%apps %server %ingredients %new ~]
+          [%apps %recipe-book %ingredients %new ~]
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'POST'
           =/  next-id  (mod eny.bowl 0xffff.ffff.ffff.ffff)
@@ -157,7 +157,7 @@
           ==
         ==
         ::
-          [%apps %server %ingredients @ ~]
+          [%apps %recipe-book %ingredients @ ~]
         =/  the-id  (scan (trip (snag 3 `(list @t)`site)) dem) ::bisk:so)
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
@@ -205,7 +205,7 @@
           ?~  data
             :_  state  %-  send  [400 ~ [%plain "No data received"]]
           :-
-            %-  send  [302 ~ [%redirect '/apps/server/ingredients']]
+            %-  send  [302 ~ [%redirect '/apps/recipe-book/ingredients']]
           %=  state
             foods  %+  ~(put by foods)
               the-id
@@ -214,7 +214,7 @@
           ==
         ==
         ::
-          [%apps %server %recipes ~]
+          [%apps %recipe-book %recipes ~]
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
           :_  state
@@ -223,7 +223,7 @@
               [200 ~ (render-sail-html "Recipes" sailhtml)]
             :~
               ;h1: Recipes
-              ;input(type "submit", value "New recipe", onclick "window.location.pathname = '/apps/server/recipes/new'");
+              ;input(type "submit", value "New recipe", onclick "window.location.pathname = '/apps/recipe-book/recipes/new'");
               ;ul
                 ;*  %+  turn  ~(val by recipes:state)
                   |=  [=recipe]
@@ -234,7 +234,7 @@
             ==
         ==
         ::
-          [%apps %server %recipes %new ~]
+          [%apps %recipe-book %recipes %new ~]
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
           :_  state
@@ -266,7 +266,7 @@
           ==
         ==
         ::
-          [%apps %server %recipes @ ~]
+          [%apps %recipe-book %recipes @ ~]
         =/  the-id  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
@@ -392,7 +392,7 @@
             ==
         ==
         ::
-          [%apps %server %recipes @ %add-instr ~]
+          [%apps %recipe-book %recipes @ %add-instr ~]
         =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'POST'
@@ -411,7 +411,7 @@
           ==
         ==
         ::
-          [%apps %server %recipes @ %move-instr @ @ ~]
+          [%apps %recipe-book %recipes @ %move-instr @ @ ~]
         =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
         =/  from-index  (rash (snag 5 `(list @t)`site) dem)
         =/  to-index  (rash (snag 6 `(list @t)`site) dem)
@@ -438,7 +438,7 @@
           ==
         ==
         ::
-          [%apps %server %recipes @ %delete-instr @ ~]
+          [%apps %recipe-book %recipes @ %delete-instr @ ~]
         =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
         =/  instruction-index  (rash (snag 5 `(list @t)`site) dem)
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
@@ -455,7 +455,7 @@
           ==
         ==
         ::
-          [%apps %server %recipes @ %add-ingredient ~]
+          [%apps %recipe-book %recipes @ %add-ingredient ~]
         =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'POST'
@@ -485,7 +485,7 @@
           ==
         ==
         ::
-          [%apps %server %recipes @ %delete-ingredient @ ~]
+          [%apps %recipe-book %recipes @ %delete-ingredient @ ~]
         =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
         =/  ingredient-index  (rash (snag 5 `(list @t)`site) dem)
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
@@ -502,7 +502,7 @@
           ==
         ==
         ::
-          [%apps %server %recipes @ %rename ~]
+          [%apps %recipe-book %recipes @ %rename ~]
         =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'POST'
@@ -538,17 +538,17 @@
       %-  crip  %-  en-xml:html
       ;html
         ;head
-          ;link(rel "stylesheet", href "/apps/server/static/styles/css");
+          ;link(rel "stylesheet", href "/apps/recipe-book/static/styles/css");
           ;title: {title}
         ==
         ;body
           ;nav
             ;ul
               ;li
-                ;a(href "/apps/server/ingredients"): Ingredients
+                ;a(href "/apps/recipe-book/ingredients"): Ingredients
               ==
               ;li
-                ;a(href "/apps/server/recipes"): Recipes
+                ;a(href "/apps/recipe-book/recipes"): Recipes
               ==
             ==
           ==
