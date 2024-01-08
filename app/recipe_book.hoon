@@ -115,7 +115,6 @@
   |=  [=mark =vase]
   ^-  (quip card _this)
   |^
-  ?>  =(src.bowl our.bowl)
   ?+  mark  (on-poke:def mark vase)
       %handle-http-request
     =^  cards  state
@@ -129,7 +128,7 @@
     =/  ,request-line:server
       (parse-request-line:server url.request.inbound-request)
     =+  send=(cury response:schooner eyre-id)
-    ?.  authenticated.inbound-request
+    ?.  ?&  authenticated.inbound-request  =(src.bowl our.bowl)  ==
       :_  state  %-  send  [302 ~ [%login-redirect '/apps/recipe-book']]
     ::
     |^
@@ -138,27 +137,45 @@
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
           :_  state
-          %-  send
-            =;  sailhtml
-              [200 ~ (render-sail-html "Home" sailhtml)]
-            :~
-              ;h1: Recipe book
-              ;p: Check out:
-              ;ul
-                ;li
-                  ;a(href "/apps/recipe-book/recipes"): Recipes
-                ==
-                ;li
-                  ;a(href "/apps/recipe-book/ingredients"): Ingredients
-                ==
-              ==
-            ==
+          %-  send  [302 ~ [%redirect '/apps/recipe-book/about']]
         ==
         ::
           [%apps %recipe-book %static *]
         ?.  ?=  %'GET'  method.request.inbound-request
           [(send [405 ~ [%stock ~]]) state]
         [(send (handle-static (slag 3 `(list @ta)`site))) state]  :: Delegate to static handler
+        ::
+          [%apps %recipe-book %about *]
+        ?.  ?=  %'GET'  method.request.inbound-request
+          [(send [405 ~ [%stock ~]]) state]
+        :_  state
+        %-  send
+          =;  sailhtml
+            [200 ~ (render-sail-html "About" sailhtml)]
+          :~
+            ;h1: About %recipe-book
+            ;p
+              This is an app for you to create and share your favorite recipes.
+              It also tells you the macros (macronutrients) for each recipe you create.
+            ==
+            ;p
+              ; For help getting started, check out the sandbox recipe
+              ;a(href "/apps/recipe-book/help"): here
+              ; .
+            ==
+            ;p
+              ; Or, check out your recipes
+              ;a(href "/apps/recipe-book/recipes"): here
+              ; .
+            ==
+          ==
+        ::
+          [%apps %recipe-book %help ~]
+        ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+            %'GET'
+          :_  state
+          %-  send  [302 ~ [%redirect '/apps/recipe-book/recipes/80345cb237c34773']]
+        ==
         ::
           [%apps %recipe-book %ingredients ~]
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
@@ -600,6 +617,14 @@
               ==
               ;li
                 ;a(href "/apps/recipe-book/recipes"): Recipes
+              ==
+            ==
+            ;ul
+              ;li
+                ;a(href "/apps/recipe-book/about"): About this app
+              ==
+              ;li
+                ;a(href "/apps/recipe-book/help"): Help
               ==
             ==
           ==
