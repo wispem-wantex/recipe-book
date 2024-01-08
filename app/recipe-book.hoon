@@ -612,10 +612,12 @@
       ;html
         ;head
           ;link(rel "stylesheet", href "/apps/recipe-book/static/styles/css");
-          ;title: {title}
+          ;link(rel "icon", href "/apps/recipe-book/static/chili-garlic/png");
+          ;title: {title} | Recipe book
         ==
         ;body
           ;nav
+            ;img(id "logo", src "/apps/recipe-book/static/chili-garlic/png");
             ;ul
               ;li
                 ;a(href "/apps/recipe-book/ingredients"): Ingredients

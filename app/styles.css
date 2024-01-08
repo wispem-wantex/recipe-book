@@ -83,3 +83,12 @@ ol#instructions li .instr-number{
     cursor: move;
     cursor: -webkit-grab;
 }
+img#logo {
+    width: 60%;
+    display: block;
+    margin: 1em auto 3em auto;
+    background-color: #cef;
+    border-radius: 50%;
+    border: 5px solid #8bd;
+    box-sizing: border-box;
+}
