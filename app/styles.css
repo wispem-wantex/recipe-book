@@ -66,11 +66,20 @@ ol#instructions {
 ol#instructions li {
 	list-style: none;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	margin: 0.3em 0;
 }
+
+ol#instructions li span {
+	margin-top: 0.2em;
+}
+ol#instructions li span p {
+	margin: 0 0 0.5em 0;
+}
+
 ol#instructions li .instr-number{
-    margin: 0 0.5em 0 1em;
+    margin-left: 1em;
+    margin-right: 0.5em;
     cursor: move;
     cursor: -webkit-grab;
 }

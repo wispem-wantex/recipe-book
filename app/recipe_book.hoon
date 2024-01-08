@@ -1,5 +1,5 @@
 /-  *food
-/+  default-agent, dbug, schooner, server, *food-init, fmt, *food-utils
+/+  default-agent, dbug, schooner, server, *food-init, fmt, *food-utils, misc-utils
 ::
 /*  styles-css  %css  /app/styles/css
 ::
@@ -438,12 +438,14 @@
                     ==
                     ;span(class "instr-number"): {(a-co:co (add 1 index))}.
                     ;span
-                      ; {(trip instr)}
+                      ;*  %+  turn  (split:misc-utils (trip instr) "\0a")
+                        |=  [line=tape]
+                        ;p: {line}
                     ==
                   ==
               ==
               ;form(action (weld (url-path-for-recipe recipe) "/add-instr"), method "POST", class "add-instr")
-                ;textarea(name "instr", rows "3", cols "50");
+                ;textarea(name "instr", rows "4", cols "50");
                 ;input(type "submit", value "Add instruction");
               ==
               =;  thescript
