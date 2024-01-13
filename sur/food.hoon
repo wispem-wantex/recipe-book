@@ -33,7 +33,8 @@
 ::
 :: Units of measurement that you can use to denominate an ingredient amount
 +$  units
-  $%  %g     :: grams
+  $+  unit-type
+  $?  %g     :: grams
       %ct    :: item count (e.g., "3 bananas")
       ::%ml    :: milliliters
       :: ...etc (could add more)
