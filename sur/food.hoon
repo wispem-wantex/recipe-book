@@ -59,4 +59,10 @@
 +$  recipes
   $+  recipe-list
   (map recipe-id recipe)
+::
+:: App state
++$  versioned-state
+  $%  state-0
+  ==
++$  state-0  [%0 =foods =recipes]
 --

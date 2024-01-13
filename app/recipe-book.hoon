@@ -1,14 +1,10 @@
 /-  *food, food-actions
-/+  default-agent, dbug, schooner, server, *food-init, fmt, *food-utils, misc-utils
+/+  default-agent, dbug, schooner, server, *food-init, fmt, *food-utils, food-tpl
 ::
 /*  styles-css  %css  /app/styles/css
 /*  chili-garlic-png  %png  /app/chili-garlic/png
 ::
 |%
-+$  versioned-state
-  $%  state-0
-  ==
-+$  state-0  [%0 =foods =recipes]
 ::
 ++  blank-state-0
   :*  %0
@@ -147,7 +143,7 @@
             |=  [i=ingredient]
             :-  food-id.i
             (~(got by foods:state) food-id.i)
-        [%resp original-eyre-id.act [%get-recipe recipe-id.req.act the-recipe filtered-foods]]
+        [%resp original-eyre-id.act [%get-recipe recipe-id.req.act [%0 filtered-foods (molt :~([recipe-id.req.act the-recipe]))]]]
       ==
       ::
       :: remote ship replied; now render HTML for it
@@ -180,22 +176,12 @@
           original-eyre-id.act
           200
           ~
-          :-  %html
-            %-  crip  %-  en-xml:html
-          ;html
-            ;body
-              ;h1: "{<name.recipe.resp.act>}" from {<src.bowl>}
-              ::;ul
-              ::  :: DUPE 1
-              ::  ;*  %+  turn  ~(val by recipes.resp.act)
-              ::    |=  [r=recipe]
-              ::    =/  linkpath  (weld "/apps/recipe-book/pals/{<src.bowl>}/recipes/" (trip (en:base16:mimes:html [8 id:r])))
-              ::    ;li
-              ::      ;a(href linkpath): {(trip name:r)}
-              ::    ==
-              ::==
-            ==
-          ==
+          %-  render-sail-html
+            :-
+              (trip name:(~(got by recipes.state.resp.act) recipe-id.resp.act))
+            %+  weld
+              ;+  ;h2: from {<src.bowl>}
+            (~(recipe-detail food-tpl state.resp.act) recipe-id.resp.act %.n)
         ==
       ==
     ==
@@ -237,6 +223,56 @@
   ==
 ++  on-fail   on-fail:def
 --
+::
+=>
+|%
+++  render-sail-html
+  |=  [title=tape content=marl]
+  ^-  resource:schooner
+  :-
+    %html
+  %-  crip  %-  en-xml:html
+  ;html
+    ;head
+      ;link(rel "stylesheet", href "/apps/recipe-book/static/styles/css");
+      ;link(rel "icon", href "/apps/recipe-book/static/chili-garlic/png");
+      ;title: {title} | Recipe book
+    ==
+    ;body
+      ;nav
+        ;img(id "logo", src "/apps/recipe-book/static/chili-garlic/png");
+        ;ul
+          ;li
+            ;a(href "/apps/recipe-book/ingredients"): Ingredients
+          ==
+          ;li
+            ;a(href "/apps/recipe-book/recipes"): Recipes
+          ==
+        ==
+        ;ul
+          ;li
+            ;a(href "/apps/recipe-book/about"): About this app
+          ==
+          ;li
+            ;a(href "/apps/recipe-book/help"): Help
+          ==
+        ==
+        ;div
+          ;form(action "/apps/recipe-book/pals", method "POST")
+            :: Enclosed in {} to fix syntax highlighter
+            ;label: {"Check out a friend's recipe"}
+            ;input(name "pal", placeholder "~zod");
+            ;input(type "submit", value "Go");
+          ==
+        ==
+      ==
+      ;main
+        ;*  content
+      ==
+    ==
+  ==
+--
+
 ::
 |_  =bowl:gall
 ++  handle-local-http
@@ -462,122 +498,9 @@
         ?~  -  [(send [404 ~ [%stock ~]])]       :: 404 if it's not found
         =/  recipe  (need -)                     :: First item from the found list
         %-  send
-          =;  sailhtml
+          =;  sailhtml=marl
             [200 ~ (render-sail-html (trip name.recipe) sailhtml)]
-          :~
-            ;script(src "https://raw.githack.com/SortableJS/Sortable/master/Sortable.js");
-            ;h1: {(trip name:recipe)}
-            ;form(action (weld (url-path-for-recipe recipe) "/rename"), method "POST")
-              ;input(type "text", name "new-name");
-              ;input(type "submit", value "Rename recipe");
-            ==
-            ;table
-              ;thead
-                ;th;  :: "X" button
-                ;th: Amount
-                ;th: Ingredient
-                ;th: Calories
-                ;th: Carbs
-                ;th: Protein
-                ;th: Fat
-                ;th: Sugar
-              ==
-              ;tbody
-                ;*  %-  head  %-  spin  :+  ingredients:recipe  0
-                  |=  [=ingredient index=@]
-                  :_  +(index)
-                  =/  base-food  (need (~(get by foods:state) food-id:ingredient))
-                  =/  amount  ?-  units.amount.ingredient
-                      %g  (div:rs -:amount:ingredient mass:base-food)
-                      %ct  -:amount:ingredient
-                    ==
-                  =/  units-txt  ?-  units.amount.ingredient
-                      %g   "g"
-                      %ct  ""
-                    ==
-                  =/  amount-display=@rs  ?-  units.amount.ingredient
-                      %g   (mul:rs amount mass:base-food)
-                      %ct  amount
-                    ==
-                  ;tr
-                    ;td
-                      ;form(action (weld (url-path-for-recipe recipe) "/delete-ingredient/{<index>}"), method "POST", class "x-button")
-                        ;input(type "submit", value "\d7", title "Delete ingredient");
-                      ==
-                    ==
-                    ;td: {(format:fmt amount-display)} {units-txt}
-                    ;td(class "ingr-name"): {(trip name:base-food)}
-                    ;td: {(format:fmt (mul:rs calories:base-food amount))}
-                    ;td: {(format:fmt (mul:rs carbs:base-food amount))}
-                    ;td: {(format:fmt (mul:rs protein:base-food amount))}
-                    ;td: {(format:fmt (mul:rs fat:base-food amount))}
-                    ;td: {(format:fmt (mul:rs sugar:base-food amount))}
-                  ==
-                ::
-                ;+
-                  =/  recipe-food  (recipe-to-food recipe foods)
-                ;tr
-                  ;td;
-                  ;td;
-                  ;td(class "total"): Total:
-                  ;td(class "total"): {(format:fmt calories:recipe-food)}
-                  ;td(class "total"): {(format:fmt carbs:recipe-food)}
-                  ;td(class "total"): {(format:fmt protein:recipe-food)}
-                  ;td(class "total"): {(format:fmt fat:recipe-food)}
-                  ;td(class "total"): {(format:fmt sugar:recipe-food)}
-                ==
-              ==
-            ==
-            ;form(action (weld (url-path-for-recipe recipe) "/add-ingredient"), method "POST", class "add-ingr")
-              ;label: Ingredient:
-              ;input(type "text", list "ingredient-options", name "food-id");
-              ;datalist(id "ingredient-options")
-                ;*  %+  turn  ~(val by foods:state)
-                  |=  [=food]
-                  ;option(value (a-co:co id.food)): {(trip name.food)}
-              ==
-              ;label: Amount:
-              ;input(type "text", name "amount");
-              ;label: Units:
-              ;select(name "units")
-                ;option(value "g"): g
-                ;option(value "ct"): count
-              ==
-              ;input(type "submit", value "Add ingredient");
-            ==
-            ;h2: Instructions
-            ;ol(id "instructions")
-              ;*  %-  head  %-  spin  :+  instructions:recipe  0
-                |=  [instr=@t index=@]
-                :_  +(index)
-                ;li
-                  ;form(action (weld (url-path-for-recipe recipe) "/delete-instr/{<index>}"), method "POST", class "x-button")
-                    ;input(type "submit", value "\d7", title "Delete instruction");
-                  ==
-                  ;span(class "instr-number"): {(a-co:co (add 1 index))}.
-                  ;span
-                    ;*  %+  turn  (split:misc-utils (trip instr) "\0a")
-                      |=  [line=tape]
-                      ;p: {line}
-                  ==
-                ==
-            ==
-            ;form(action (weld (url-path-for-recipe recipe) "/add-instr"), method "POST", class "add-instr")
-              ;textarea(name "instr", rows "4", cols "50");
-              ;input(type "submit", value "Add instruction");
-            ==
-            =;  thescript
-              ;script: {(trip thescript)}
-              '''
-              Sortable.create(instructions, {
-                handle: ".instr-number",
-                onEnd: function(evt) {
-                  console.log(window.location.href + "/move-instr/" + evt.oldIndex + "/" + evt.newIndex);
-                  window.location.href = window.location.href + "/move-instr/" + evt.oldIndex + "/" + evt.newIndex;
-                },
-              });
-              '''
-          ==
+          (~(recipe-detail food-tpl state) the-id %.y)
       ==
       ::
         [%apps %recipe-book %recipes @ %add-instr ~]
@@ -709,6 +632,17 @@
         ==
       ==
       ::
+        [%apps %recipe-book %pals ~]
+      ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+          %'POST'
+        :_  state
+        =/  pal=tape
+          (trip (need (get-form-value (need (parse-form-body request.inbound-request)) 'pal')))
+        ?~  (rust pal ;~(pfix sig crub:so))
+          %-  send  [427 ~ [%plain "Invalid ship: {<pal>}"]]
+        %-  send  [302 ~ [%redirect (crip (weld "/apps/recipe-book/pals/" pal))]]
+      ==
+      ::
         [%apps %recipe-book %pals @ ~]
       =/  pal  (rash (snag 3 `(list @t)`site) ;~(pfix sig crub:so))
       ?>  =(-.pal %p)  :: make sure it parsed as a ship-name
@@ -745,43 +679,6 @@
       [200 ~ [%image-png chili-garlic-png]]
     ==
   ::
-  ++  render-sail-html
-    |=  [title=tape content=marl]
-    ^-  resource:schooner
-    :-
-      %html
-    %-  crip  %-  en-xml:html
-    ;html
-      ;head
-        ;link(rel "stylesheet", href "/apps/recipe-book/static/styles/css");
-        ;link(rel "icon", href "/apps/recipe-book/static/chili-garlic/png");
-        ;title: {title} | Recipe book
-      ==
-      ;body
-        ;nav
-          ;img(id "logo", src "/apps/recipe-book/static/chili-garlic/png");
-          ;ul
-            ;li
-              ;a(href "/apps/recipe-book/ingredients"): Ingredients
-            ==
-            ;li
-              ;a(href "/apps/recipe-book/recipes"): Recipes
-            ==
-          ==
-          ;ul
-            ;li
-              ;a(href "/apps/recipe-book/about"): About this app
-            ==
-            ;li
-              ;a(href "/apps/recipe-book/help"): Help
-            ==
-          ==
-        ==
-        ;main
-          ;*  content
-        ==
-      ==
-    ==
   --
 ::++  handle-remote-read-req
 ::  |=  [=req:food-actions]
