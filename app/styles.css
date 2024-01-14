@@ -92,3 +92,12 @@ img#logo {
     border: 5px solid #8bd;
     box-sizing: border-box;
 }
+
+div.original-author-container {
+	display: flex;
+	align-items: center;
+	gap: 2em;
+}
+div.original-author-container form {
+	margin: 0;
+}

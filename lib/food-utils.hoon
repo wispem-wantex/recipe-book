@@ -69,7 +69,7 @@
 ++  normalize-ingredient
   |=  [i=ingredient all-foods=foods]
   ^-  normalized-ingredient
-  =/  base-food  (need (~(get by all-foods) food-id:i))
+  =/  base-food  (~(got by all-foods) food-id:i)
   ?-  units.amount.i
     %g     [amount=(div:rs -:amount:i mass:base-food) food=base-food]
     %ct    [amount=-:amount:i food=base-food]

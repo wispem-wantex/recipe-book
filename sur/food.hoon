@@ -55,6 +55,7 @@
       name=@ta
       ingredients=(list ingredient)
       instructions=(list @t)
+      provenance=(unit $:(author=@p id=recipe-id))
   ==
 +$  recipes
   $+  recipe-list

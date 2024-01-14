@@ -17,6 +17,9 @@
   :~
     ;script(src "https://raw.githack.com/SortableJS/Sortable/master/Sortable.js");
     ;h1: {(trip name:recipe)}
+    ?~  provenance.recipe
+        ;br;  :: type checker requires a manx (can't use ~)
+      ;h3: {<author:(need provenance.recipe)>}{"'"}s original recipe
     ;form(action (weld (url-path-for-recipe:food-utils recipe) "/rename"), method "POST")
       ;input(type "text", name "new-name");
       ;input(type "submit", value "Rename recipe");
@@ -129,7 +132,7 @@
       '''
   ==
 ::
-:: Render for the recipe list
+:: Renderer for the recipe list
 ++  recipe-list
   =/  base-path  "/apps/recipe-book/recipes/"
   |=  [is-editable=?]
@@ -159,7 +162,9 @@
   |=  [input=manx]
   ^-  manx
   %=  input
-    a.g  (snoc (snoc a.g.input [%disabled "true"]) [%title "You are viewing someone else's recipe.  Make a copy to edit it"])
+    a.g  %+  snoc  %+  snoc  a.g.input
+      [%disabled "true"]
+      [%title "You are viewing someone else's recipe.  Make a copy to edit it"]
   ==
 ++  disable-all-inputs
   |=  [data=marl]

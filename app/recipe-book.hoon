@@ -44,6 +44,7 @@
                 name='Chicken Parmigiana Soup'
                 ingredients=ingredients
                 instructions=instrs
+                provenance=[~ [~wispem-wantex id]]
             ==
           =/  id=recipe-id  q:(need (de:base16:mimes:html '80345cb237c34773'))
             :-  id
@@ -67,6 +68,7 @@
                 name='How to use this app :)'
                 ingredients=ingredients
                 instructions=instrs
+                provenance=~
             ==
         ==
   ==
@@ -121,7 +123,6 @@
     ::
       %recipe-action
     ~&  "src: {<src.bowl>}"
-    :_  this
     =/  act  !<(action:food-actions vase)
     ~&  "act: {<act>}"
     ?-  -.act
@@ -130,6 +131,7 @@
         %req
       ~&  "Serving req from {<src.bowl>}"
       =;  resp=action:food-actions
+        :_  this
         :~  [%pass /whatever %agent [src.bowl %recipe-book] %poke %recipe-action !>(resp)]  ==
       ?-  -.req.act
           %list-recipes
@@ -144,12 +146,23 @@
             :-  food-id.i
             (~(got by foods:state) food-id.i)
         [%resp original-eyre-id.act [%get-recipe recipe-id.req.act [%0 filtered-foods (molt :~([recipe-id.req.act the-recipe]))]]]
+        ::
+          %copy-recipe
+        =/  the-recipe=recipe
+          (~(got by recipes.state) recipe-id.req.act)
+        =/  filtered-foods
+          %-  molt  %+  turn  ingredients.the-recipe
+            |=  [i=ingredient]
+            :-  food-id.i
+            (~(got by foods:state) food-id.i)
+        [%resp original-eyre-id.act [%copy-recipe recipe-id.req.act [%0 filtered-foods (molt :~([recipe-id.req.act the-recipe]))]]]
       ==
       ::
       :: remote ship replied; now render HTML for it
         %resp
       ?-  -.resp.act
           %list-recipes
+        :_  this
         %-  response:schooner  :*
           original-eyre-id.act
           200
@@ -161,17 +174,65 @@
             =/  renderer  ~(recipe-list food-tpl state.resp.act)
             (renderer(base-path "/apps/recipe-book/pals/{<src.bowl>}/recipes/") %.n)
         ==
+        ::
           %get-recipe
+        :_  this
         %-  response:schooner  :*
           original-eyre-id.act
           200
           ~
           %-  render-sail-html
+            =/  the-recipe  (~(got by recipes.state.resp.act) recipe-id.resp.act)
+            =/  copy-recipe-path
+              =/  url-helper  url-path-for-recipe
+              %+  weld  (url-helper(base-path "/apps/recipe-book/pals/{<src.bowl>}/recipes/") the-recipe)
+              "/copy"
             :-
-              (trip name:(~(got by recipes.state.resp.act) recipe-id.resp.act))
+              (trip name:the-recipe)
             %+  weld
-              ;+  ;h2: from {<src.bowl>}
+              ;+  ;div(class "original-author-container")
+                ;h2: from {<src.bowl>}
+                ;form(action copy-recipe-path, method "POST")
+                  ;input(type "submit", value "Make your own copy");
+                ==
+              ==
             (~(recipe-detail food-tpl state.resp.act) recipe-id.resp.act %.n)
+        ==
+        ::
+          %copy-recipe
+        =/  old-recipe  (~(got by recipes.state.resp.act) recipe-id.resp.act)
+        =/  new-foods  %+  turn  ingredients.old-recipe
+          |=  [i=ingredient]
+          ^-  (pair food ingredient)
+          =/  our-food=(unit food)  (~(get by foods:state) food-id.i)
+          =/  their-food=food  (~(got by foods.state.resp.act) food-id.i)
+          ?~  our-food
+            [their-food i]  :: New food with new ID
+          ?:  =(their-food (need our-food))
+            [their-food i]  :: Same ingredient with same ID; clobbering is OK
+          :: Otherwise, they've modified the ingredient; give it a new ID to avoid clobbering
+          =/  new-id  (mod (add eny.bowl id.their-food) 0xffff.ffff.ffff.ffff)
+          [their-food(id new-id) i(food-id new-id)]
+        =/  new-recipe
+          %_  old-recipe
+            id  (mod (add eny.bowl id.old-recipe) 0xffff.ffff.ffff.ffff)
+            ingredients  (turn new-foods |=([=food =ingredient] ingredient))
+            provenance  ?~  provenance.old-recipe
+              [~ [src.bowl id.old-recipe]]
+            provenance.old-recipe
+          ==
+        :_
+          %=  this
+            state  %=  state
+              foods  (~(uni by (molt (turn new-foods |=([=food =ingredient] [id.food food])))) foods.state)
+              recipes  (~(put by recipes:state) id.new-recipe new-recipe)
+            ==
+          ==
+        %-  response:schooner  :*
+          original-eyre-id.act
+          302
+          ~
+          %redirect  (crip (url-path-for-recipe new-recipe))
         ==
       ==
     ==
@@ -642,6 +703,19 @@
           %'GET'
         :_  state
         =/  data=action:food-actions  [%req eyre-id [%get-recipe the-id]]
+        :~
+          [%pass /whatever %agent [`@p`+.pal %recipe-book] %poke %recipe-action !>(data)]
+        ==
+      ==
+      ::
+        [%apps %recipe-book %pals @ %recipes @ %copy ~]
+      =/  pal  (rash (snag 3 `(list @t)`site) ;~(pfix sig crub:so))
+      ?>  =(-.pal %p)  :: make sure it parsed as a ship-name
+      =/  the-id=@t  q:(need (de:base16:mimes:html (snag 5 `(list @t)`site)))
+      ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+          %'POST'
+        :_  state
+        =/  data=action:food-actions  [%req eyre-id [%copy-recipe the-id]]
         :~
           [%pass /whatever %agent [`@p`+.pal %recipe-book] %poke %recipe-action !>(data)]
         ==
