@@ -11,7 +11,7 @@
       [%get-recipe =recipe-id]
   ==
 +$  resp
-  $%  [%list-recipes =recipes]
+  $%  [%list-recipes state=versioned-state]
       [%get-recipe =recipe-id state=versioned-state]
   ==
 --

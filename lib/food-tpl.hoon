@@ -128,6 +128,28 @@
       });
       '''
   ==
+::
+:: Render for the recipe list
+++  recipe-list
+  =/  base-path  "/apps/recipe-book/recipes/"
+  |=  [is-editable=?]
+  ^-  marl
+  =;  data
+    ?:  is-editable
+      data
+    (disable-all-inputs data)
+  :~
+    ;h1: Recipes
+    ;input(type "submit", value "New recipe", onclick "window.location.pathname = '/apps/recipe-book/recipes/new'");
+    ;ul
+      ;*  %+  turn  ~(val by recipes:state)
+        |=  [=recipe]
+        =/  url-helper  url-path-for-recipe:food-utils
+        ;li
+          ;a(href (url-helper(base-path base-path) recipe)): {(trip name:recipe)}
+        ==
+    ==
+  ==
 --
 ::
 :: Some helper functions for rendering

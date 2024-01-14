@@ -133,7 +133,7 @@
         :~  [%pass /whatever %agent [src.bowl %recipe-book] %poke %recipe-action !>(resp)]  ==
       ?-  -.req.act
           %list-recipes
-        [%resp original-eyre-id.act [%list-recipes recipes.state]]
+        [%resp original-eyre-id.act [%list-recipes [%0 ~ recipes.state]]]
         ::
           %get-recipe
         =/  the-recipe=recipe
@@ -154,22 +154,12 @@
           original-eyre-id.act
           200
           ~
-          :-  %html
-            %-  crip  %-  en-xml:html
-          ;html
-            ;body
-              ;h1: Recipes from {<src.bowl>}
-              ;ul
-                :: DUPE 1
-                ;*  %+  turn  ~(val by recipes.resp.act)
-                  |=  [r=recipe]
-                  =/  linkpath  (weld "/apps/recipe-book/pals/{<src.bowl>}/recipes/" (trip (en:base16:mimes:html [8 id:r])))
-                  ;li
-                    ;a(href linkpath): {(trip name:r)}
-                  ==
-              ==
-            ==
-          ==
+          %-  render-sail-html
+            :-  "Recipes ({<src.bowl>}"
+            %+  weld
+              ;+  ;h2: from {<src.bowl>}
+            =/  renderer  ~(recipe-list food-tpl state.resp.act)
+            (renderer(base-path "/apps/recipe-book/pals/{<src.bowl>}/recipes/") %.n)
         ==
           %get-recipe
         %-  response:schooner  :*
@@ -442,18 +432,7 @@
         %-  send
           =;  sailhtml
             [200 ~ (render-sail-html "Recipes" sailhtml)]
-          :~
-            ;h1: Recipes
-            ;input(type "submit", value "New recipe", onclick "window.location.pathname = '/apps/recipe-book/recipes/new'");
-            ;ul
-              :: DUPE 1
-              ;*  %+  turn  ~(val by recipes:state)
-                |=  [=recipe]
-                ;li
-                  ;a(href (url-path-for-recipe recipe)): {(trip name:recipe)}
-                ==
-            ==
-          ==
+          (~(recipe-list food-tpl state) %.y)
       ==
       ::
         [%apps %recipe-book %recipes %new ~]
