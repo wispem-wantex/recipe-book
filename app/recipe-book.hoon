@@ -115,11 +115,15 @@
   =/  old  !<(versioned-state old-state)
   =/  updated-state  |-  :: Update state to latest version if needed
     ?-  -.old
-      %0  `this(state old)       :: Up to date
+      %0  old       :: Up to date
     ==
-  :: Update help recipe with any new instrs
-  %=  updated-state
-    recipes.state  (~(put by recipes.state) help-recipe-id help-recipe)
+  :-  ~  :: No cards
+  %=  this
+    :: Load the updated state
+    state  %=  updated-state
+      :: Update help recipe with any new instrs
+      recipes  (~(put by recipes.updated-state) help-recipe-id help-recipe)
+    ==
   ==
 ::
 ++  on-poke
