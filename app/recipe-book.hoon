@@ -5,72 +5,78 @@
 /*  chili-garlic-png  %png  /app/chili-garlic/png
 ::
 |%
-::
+++  help-recipe-id
+  ^-  recipe-id
+  q:(need (de:base16:mimes:html '80345cb237c34773'))
+++  help-instrs
+  ^-  (list @t)
+  :~  'This isn\'t a real recipe, it\'s just a sandbox for you to play in.  (It can get reset, so don\'t put an important recipe here.)'
+      'Try adding an ingredient to the recipe! Start typing the ingredient name, then pick the right one from the dropdown menu.\0a\0aFor example, try typing "chicken" to filter for chicken options, and add your favorite type of chicken.'
+      'Next, enter the amount of that ingredient by typing a number and picking a unit from the dropdown.\0a\0aUnits can be either a "count" (like "2 bananas", so you would type "2" and pick "count"), or a measurement (like "200 grams of ground beef", so you would type "200" and pick "g").'
+      'Press "Add ingredient" to add it to the recipe.'
+      'The nutritional information of the recipe will be computed automatically.'
+      'You can add instructions for the recipe. Just enter them into the box at the bottom of the page, one at a time, pressing "Add instruction".'
+      'Ingredients and instructions can be deleted by clicking the "x" button next to them.'
+      'You can also re-order the instructions. Click on the instruction number (like "8." for this instruction) to drag-and-drop an instruction to its new place.'
+      'If you want an ingredient type that isn\'t in the app yet, you can create it. Click "Ingredients" in the sidebar and then click "New Ingredient".'
+      'You can view your list of recipes by clicking "Recipes" in the sidebar.'
+      'You can also view your friends\'s recipes (or your enemies\', I guess) by searching their urbit ID in the sidebar.'
+  ==
+++  help-recipe
+  ^-  recipe
+  =/  ingredients  ^-  (list ingredient)
+    :~  [food-id=44 amount=[rs=.300 units=%g]]
+    ==
+  :*  id=help-recipe-id
+      name='How to use this app :)'
+      ingredients=ingredients
+      instructions=help-instrs
+      provenance=~
+  ==
 ++  blank-state-0
+  ^-  state-0
   :*  %0
       (molt (turn initial-foods |=(f=food `(pair food-id food)`[id.f f])))
-      %-  molt
-        :~
-          =/  id=recipe-id  q:(need (de:base16:mimes:html 'de32bc69c2e6b69f'))
-            :-  id
-            ^-  recipe
-            :: Create a default recipe as a welcome
-            =/  ingredients  ^-  (list ingredient)
-              :~  [food-id=37 amount=[rs=.2 units=%ct]]
-                  [food-id=92 amount=[rs=.30 units=%g]]
-                  [food-id=20 amount=[rs=.30 units=%g]]
-                  [food-id=41 amount=[rs=.40 units=%g]]
-                  [food-id=121 amount=[rs=.800 units=%g]]
-                  [food-id=75 amount=[rs=.450 units=%g]]
-                  [food-id=6 amount=[rs=.300 units=%g]]
-                  [food-id=98 amount=[rs=.150 units=%g]]
-                  [food-id=101 amount=[rs=.150 units=%g]]
-                  [food-id=239 amount=[rs=.2 units=%g]]
-                  [food-id=241 amount=[rs=.2 units=%g]]
-                  [food-id=245 amount=[rs=.5 units=%g]]
-                  [food-id=3.000 amount=[rs=.1000 units=%g]]
-              ==
-            =/  instrs  ^-  (list @t)
-              :~  'In large pot, heat butter and oil.  Cook onions to 1/2 cooked (translucent and soft, starting to turn golden-brown)'
-                  'Add garlic, cook 1-2 minutes'
-                  'add tomatoes and chicken broth, bring to a simmer'
-                  'salt and season the soup, tasting until seasonings are right'
-                  'cut chicken into bite-sized pieces, add to soup and boil until fully cooked'
-                  'add pasta and boil until it is cooked "al dente"; add more stock as needed'
-                  'add half the cheese and stir it into the soup'
-                  'sprinkle remaining cheese on top and serve'
-              ==
-            :*  id=id
-                name='Chicken Parmigiana Soup'
-                ingredients=ingredients
-                instructions=instrs
-                provenance=[~ [~wispem-wantex id]]
-            ==
-          =/  id=recipe-id  q:(need (de:base16:mimes:html '80345cb237c34773'))
-            :-  id
-            ^-  recipe
-            =/  ingredients  ^-  (list ingredient)
-              :~  [food-id=44 amount=[rs=.300 units=%g]]
-              ==
-            =/  instrs  ^-  (list @t)
-              :~  'This isn\'t a real recipe, it\'s just a sandbox for you to play in.'
-                  'Try adding an ingredient to the recipe! Start typing the ingredient name, then pick the right one from the dropdown menu.\0a\0aFor example, try typing "chicken" to filter for chicken options, and add your favorite type of chicken.'
-                  'Next, enter the amount of that ingredient by typing a number and picking a unit from the dropdown.\0a\0aUnits can be either a "count" (like "2 bananas", so you would type "2" and pick "count"), or a measurement (like "200 grams of ground beef", so you would type "200" and pick "g").'
-                  'Press "Add ingredient" to add it to the recipe.'
-                  'The nutritional information of the recipe will be computed automatically.'
-                  'You can add instructions for the recipe. Just enter them into the box at the bottom of the page, one at a time, pressing "Add instruction".'
-                  'Ingredients and instructions can be deleted by clicking the "x" button next to them.'
-                  'You can also re-order the instructions. Click on the instruction number (like "8." for this instruction) to drag-and-drop an instruction to its new place.'
-                  'If you want an ingredient type that isn\'t in the app yet, you can create it. Click "Ingredients" in the sidebar and then click "New Ingredient".'
-                  'You can view your list of recipes by clicking "Recipes" in the sidebar.'
-              ==
-            :*  id=id
-                name='How to use this app :)'
-                ingredients=ingredients
-                instructions=instrs
-                provenance=~
-            ==
+      %-  molt  :~
+        =/  id=recipe-id  q:(need (de:base16:mimes:html 'de32bc69c2e6b69f'))
+        :-  id
+        ^-  recipe
+        :: Create a default recipe as a welcome
+        =/  ingredients  ^-  (list ingredient)
+          :~  [food-id=37 amount=[rs=.2 units=%ct]]
+              [food-id=92 amount=[rs=.30 units=%g]]
+              [food-id=20 amount=[rs=.30 units=%g]]
+              [food-id=41 amount=[rs=.40 units=%g]]
+              [food-id=121 amount=[rs=.800 units=%g]]
+              [food-id=75 amount=[rs=.450 units=%g]]
+              [food-id=6 amount=[rs=.300 units=%g]]
+              [food-id=98 amount=[rs=.150 units=%g]]
+              [food-id=101 amount=[rs=.150 units=%g]]
+              [food-id=239 amount=[rs=.2 units=%g]]
+              [food-id=241 amount=[rs=.2 units=%g]]
+              [food-id=245 amount=[rs=.5 units=%g]]
+              [food-id=3.000 amount=[rs=.1000 units=%g]]
+          ==
+        =/  instrs  ^-  (list @t)
+          :~  'In large pot, heat butter and oil.  Cook onions to 1/2 cooked (translucent and soft, starting to turn golden-brown)'
+              'Add garlic, cook 1-2 minutes'
+              'add tomatoes and chicken broth, bring to a simmer'
+              'salt and season the soup, tasting until seasonings are right'
+              'cut chicken into bite-sized pieces, add to soup and boil until fully cooked'
+              'add pasta and boil until it is cooked "al dente"; add more stock as needed'
+              'add half the cheese and stir it into the soup'
+              'sprinkle remaining cheese on top and serve'
+          ==
+        :*  id=id
+            name='Chicken Parmigiana Soup'
+            ingredients=ingredients
+            instructions=instrs
+            provenance=[~ [~wispem-wantex id]]
         ==
+        ::
+        :: The help recipe
+        :-  help-recipe-id  help-recipe
+      ==
   ==
 ::
 +$  card  card:agent:gall
@@ -107,10 +113,14 @@
   |=  old-state=vase
   ^-  (quip card _this)
   =/  old  !<(versioned-state old-state)
-  |-
+  =/  updated-state  |-  :: Update state to latest version if needed
     ?-  -.old
-      %0  `this(state old)       :: drop it and reinit the state
+      %0  `this(state old)       :: Up to date
     ==
+  :: Update help recipe with any new instrs
+  %=  updated-state
+    recipes.state  (~(put by recipes.state) help-recipe-id help-recipe)
+  ==
 ::
 ++  on-poke
   |=  [=mark =vase]
@@ -311,7 +321,7 @@
         ;div
           ;form(action "/apps/recipe-book/pals", method "POST")
             :: Enclosed in {} to fix syntax highlighter
-            ;label: {"Check out a friend's recipe"}
+            ;label: {"Check out a friend's recipes"}
             ;input(name "pal", placeholder "~zod");
             ;input(type "submit", value "Go");
           ==
