@@ -83,8 +83,9 @@
     ==
     ;form(action (weld (url-path-for-recipe:food-utils recipe) "/add-ingredient"), method "POST", class "add-ingr")
       ;label: Ingredient:
-      ;input(type "text", list "ingredient-options", name "food-id");
-      ;datalist(id "ingredient-options")
+      ;input(type "hidden", name "food-id", id "foodIdInput");
+      ;input(type "text", list "ingredientOptions", name "food-name", id "foodNameInput");
+      ;datalist(id "ingredientOptions")
         ;*  %+  turn  ~(val by foods:state)
           |=  [=food]
           ;option(value (a-co:co id.food)): {(trip name.food)}
@@ -129,6 +130,17 @@
           window.location.href = window.location.href + "/move-instr/" + evt.oldIndex + "/" + evt.newIndex;
         },
       });
+
+
+      foodNameInput.addEventListener("input",
+        (e) => {
+          const id = e.target.value;
+          const display_text = document.querySelector("#ingredientOptions [value='" + id + "']").innerText;
+          foodIdInput.value = id;
+          foodNameInput.value = display_text;
+        }
+      )
+
       '''
   ==
 ::
