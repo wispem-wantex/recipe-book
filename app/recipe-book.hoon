@@ -1,5 +1,7 @@
-/-  *food, food-actions
+/-  *food, food-actions, changelog
 /+  default-agent, dbug, schooner, server, *food-init, fmt, *food-utils, food-tpl
+::
+/=  the-changelog  /doc/changelog
 ::
 /*  styles-css  %css  /app/styles/css
 /*  chili-garlic-png  %png  /app/chili-garlic/png
@@ -321,6 +323,9 @@
           ;li
             ;a(href "/apps/recipe-book/help"): Help
           ==
+          ;li
+            ;a(href "/apps/recipe-book/changelog"): Changelog
+          ==
         ==
         ;div
           ;form(action "/apps/recipe-book/pals", method "POST")
@@ -393,6 +398,30 @@
           %'GET'
         :_  state
         %-  send  [302 ~ [%redirect '/apps/recipe-book/recipes/80345cb237c34773']]
+      ==
+      ::
+        [%apps %recipe-book %changelog ~]
+      ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
+          %'GET'
+        :_  state
+        %-  send
+          =;  sailhtml
+            [200 ~ (render-sail-html "Changelog" sailhtml)]
+          :~
+            ;h1: Changelog
+            ;div
+              ;*  %+  turn  the-changelog
+                |=  [=version-number:changelog =patch-notes:changelog]
+                ;div
+                  ;h3: {<major.version-number>}.{<minor.version-number>}.{<patch.version-number>}
+                  ;ul
+                    ;*  %+  turn  patch-notes
+                      |=  [msg=@t]
+                      ;li: {(trip msg)}
+                  ==
+                ==
+            ==
+          ==
       ==
       ::
         [%apps %recipe-book %ingredients ~]
