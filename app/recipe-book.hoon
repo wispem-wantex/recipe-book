@@ -226,11 +226,11 @@
           ?:  =(their-food (need our-food))
             [their-food i]  :: Same ingredient with same ID; clobbering is OK
           :: Otherwise, they've modified the ingredient; give it a new ID to avoid clobbering
-          =/  new-id  (mod (add eny.bowl id.their-food) 0xffff.ffff.ffff.ffff)
+          =/  new-id  (mod (add eny.bowl id.their-food) 0x1.0000.0000.0000.0000)
           [their-food(id new-id) i(food-id new-id)]
         =/  new-recipe
           %_  old-recipe
-            id  (mod (add eny.bowl id.old-recipe) 0xffff.ffff.ffff.ffff)
+            id  (mod (add eny.bowl id.old-recipe) 0x1.0000.0000.0000.0000)
             ingredients  (turn new-foods |=([=food =ingredient] ingredient))
             provenance  ?~  provenance.old-recipe
               [~ [src.bowl id.old-recipe]]
@@ -461,7 +461,7 @@
         [%apps %recipe-book %ingredients %new ~]
       ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
           %'POST'
-        =/  next-id  (mod eny.bowl 0xffff.ffff.ffff.ffff)
+        =/  next-id  (mod eny.bowl 0x1.0000.0000.0000.0000)
         =/  new-food  *food
         =.  id.new-food  next-id
         :-
@@ -562,7 +562,7 @@
           :_  state  %-  send  [400 ~ [%plain "'name' field is required"]]
         =/  =recipe  *recipe
         =.  name.recipe  name
-        =.  id.recipe  (mod eny.bowl 0xffff.ffff.ffff.ffff)
+        =.  id.recipe  (mod eny.bowl 0x1.0000.0000.0000.0000)
         :-
           %-  send  [302 ~ [%redirect (crip (url-path-for-recipe recipe))]]
         %=  state
