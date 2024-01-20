@@ -146,7 +146,7 @@
 ::
 :: Renderer for the recipe list
 ++  recipe-list
-  =/  base-path  "/apps/recipe-book/recipes/"
+  =/  base-path  "/apps/recipe-book"
   |=  [is-editable=?]
   ^-  marl
   =;  data

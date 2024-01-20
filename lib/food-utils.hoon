@@ -11,10 +11,10 @@
 ::
 :: Given a recipe, produce its URL path
 ++  url-path-for-recipe
-  =/  base-path=tape  "/apps/recipe-book/recipes/"
+  =/  base-path=tape  "/apps/recipe-book"
   |=  [=recipe]
   ^-  tape
-  (weld base-path (trip (en:base16:mimes:html [8 id:recipe])))
+  ;:(weld base-path "/recipes/" (trip (en:base16:mimes:html [8 id:recipe])))
 ::
 :: Parse a form-encoded body or query string
 ++  parse-form-body

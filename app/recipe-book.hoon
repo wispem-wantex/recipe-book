@@ -138,7 +138,6 @@
     [cards this]
     ::
       %recipe-action
-    ~&  "src: {<src.bowl>}"
     =/  act  !<(action:food-actions vase)
     ~&  "act: {<act>}"
     ?-  -.act
@@ -188,7 +187,7 @@
             %+  weld
               ;+  ;h2: from {<src.bowl>}
             =/  renderer  ~(recipe-list food-tpl state.resp.act)
-            (renderer(base-path "/apps/recipe-book/pals/{<src.bowl>}/recipes/") %.n)
+            (renderer(base-path "/apps/recipe-book/pals/{<src.bowl>}") %.n)
         ==
         ::
           %get-recipe
@@ -201,7 +200,7 @@
             =/  the-recipe  (~(got by recipes.state.resp.act) recipe-id.resp.act)
             =/  copy-recipe-path
               =/  url-helper  url-path-for-recipe
-              %+  weld  (url-helper(base-path "/apps/recipe-book/pals/{<src.bowl>}/recipes/") the-recipe)
+              %+  weld  (url-helper(base-path "/apps/recipe-book/pals/{<src.bowl>}") the-recipe)
               "/copy"
             :-
               (trip name:the-recipe)
@@ -264,8 +263,6 @@
       [%http-response *]
     `this
   ==
-
-++  on-leave  on-leave:def
 ::
 :: Arvo will respond when we initially connect to Eyre in `on-init`.  We will accept (and ignore)
 :: that and reject any other communications.
@@ -279,7 +276,11 @@
 ::
 :: Don't need any of these
 ++  on-agent  on-agent:def
+++  on-leave  on-leave:def
+++  on-fail   on-fail:def
 ++  on-peek
+  :: TODO: this probably isn't needed until/unless we switch from pokes to subscriptions for
+  :: inter-ship requests
   |=  =path
   ^-  (unit (unit cage))
   ?+  path  (on-peek:def path)
@@ -288,7 +289,6 @@
     :^  ~  ~  %noun
       !>  ~(val by foods:state)
   ==
-++  on-fail   on-fail:def
 --
 ::
 =>
@@ -342,7 +342,6 @@
     ==
   ==
 --
-
 ::
 |_  =bowl:gall
 ++  handle-local-http
@@ -410,7 +409,7 @@
           :~
             ;h1: Changelog
             ;div
-              ;*  %+  turn  the-changelog
+              ;*  %+  turn  (flop the-changelog)
                 |=  [=version-number:changelog =patch-notes:changelog]
                 ;div
                   ;h3: {<major.version-number>}.{<minor.version-number>}.{<patch.version-number>}
@@ -609,7 +608,6 @@
       =/  the-id=@t  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
       =/  from-index  (rash (snag 5 `(list @t)`site) dem)
       =/  to-index  (rash (snag 6 `(list @t)`site) dem)
-      ~&  >>>  "{<from-index>}, {<to-index>}"
       ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
           %'GET'
         =+  (~(get by recipes:state) the-id)                :: Find the recipe

@@ -30,6 +30,10 @@
 ++  expect
   |=  actual=vase
   (expect-eq !>(%.y) actual)
+
+++  expect-lent
+  |=  [actual=(list *) len=@]
+  (expect-eq !>(len) !>((lent actual)))
 ::  +expect-fail: kicks a trap, expecting crash. pretty-prints if succeeds
 ::
 ++  expect-fail
