@@ -130,12 +130,24 @@
       cook-ratio=.0
   ==
 ::
-::++  move-list-item
-::  |=  [the-list=(list) from-index=@ to-index=@]
-::  ^-  (list)
-::  %:  into
-::    (oust [from-index 1] the-list)
-::    to-index
-::    (snag from-index the-list)
-::  ==
+::  Parse recipe path
+::
+::  "~zod" -> [~ [~zod ~]]
+::  "~zod/1234abcd" -> [~ [~zod [~ 0x1234.abcd]]]
+::  "~zod/1234abcd/some-slug" -> [~ [~zod [~ 0x1234.abcd]]]
+::  "fjwekf" -> [~]
++$  parse-result  (unit [pal=@p id=(unit @)])
+++  parse-recipe-link
+  |=  [path=tape]
+  ^-  parse-result
+  %+  rust
+    path
+  ;~  plug
+    ;~(pfix sig fed:ag)
+    ::
+    ;~  pose
+      %+  cook  |=(a=@ux `a)  ;~(sfix ;~(pfix fas hex) ;~(pose ;~(pfix fas sym) (easy ~)))
+      (easy ~)
+    ==
+  ==
 --
