@@ -3,18 +3,37 @@
 ::
 |%
 ::
+:: Encode and decode recipe ids
+++  recp-id
+  |%
+  ++  en
+    |=  [=recipe-id]
+    ^-  @t
+    (en:base16:mimes:html [8 recipe-id])
+  ++  de
+    |=  [encoded-recipe-id=@ta]
+    ^-  recipe-id
+    q:(need (de:base16:mimes:html encoded-recipe-id))
+  --
+::
+:: Encode and decode recipe URL paths
+++  recp-path
+  |_  [base-path=_"/apps/recipe-book"]
+  ++  en
+    |=  [r=recipe]
+    ^-  tape
+    ;:(weld base-path "/recipes/" (trip (en:recp-id id.r)))
+  ++  de
+    |=  [=path]
+    :: TODO: ??
+    !!
+  --
+::
 :: Given a food, produce its URL path
 ++  url-path-for
   |=  [=food]
   ^-  tape
   (weld "/apps/recipe-book/ingredients/" (a-co:co id:food))
-::
-:: Given a recipe, produce its URL path
-++  url-path-for-recipe
-  =/  base-path=tape  "/apps/recipe-book"
-  |=  [=recipe]
-  ^-  tape
-  ;:(weld base-path "/recipes/" (trip (en:base16:mimes:html [8 id:recipe])))
 ::
 :: Parse a form-encoded body or query string
 ++  parse-form-body

@@ -79,10 +79,6 @@
     :-
       !<(response-header:http +.header-cage)
     !<((unit octs) +.data-cage)
-        ::;:  weld
-        ::  %+  expect-eq  !>(302)  !>(status-code.resp-header)
-        ::  %+  expect-eq  !>((crip (url-path-for-recipe:food-utils (~(got by recipes) the-id))))  !>((need (get-form-value:food-utils headers.resp-header 'location')))
-        ::==
 --
 ::
 |%
@@ -96,8 +92,8 @@
     =/  [tangs=tang recipes=recipes next=agent]  (get-recipes-from-agent next)
     ;:  weld
       tangs
-      %-  expect  !>((~(has by recipes) q:(need (de:base16:mimes:html '80345cb237c34773'))))
-      %-  expect  !>((~(has by recipes) q:(need (de:base16:mimes:html 'de32bc69c2e6b69f'))))
+      %-  expect  !>((~(has by recipes) (de:recp-id:food-utils '80345cb237c34773')))
+      %-  expect  !>((~(has by recipes) (de:recp-id:food-utils 'de32bc69c2e6b69f')))
       %+  expect-lent  ~(val by recipes)  2
     ==
   ::
@@ -110,8 +106,8 @@
     =/  [tangs=tang recipes=recipes next3=agent]  (get-recipes-from-agent next2)
     ;:  weld
       tangs
-      %-  expect  !>((~(has by recipes) q:(need (de:base16:mimes:html '80345cb237c34773'))))
-      %-  expect  !>((~(has by recipes) q:(need (de:base16:mimes:html 'de32bc69c2e6b69f'))))
+      %-  expect  !>((~(has by recipes) (de:recp-id:food-utils '80345cb237c34773')))
+      %-  expect  !>((~(has by recipes) (de:recp-id:food-utils 'de32bc69c2e6b69f')))
       %+  expect-lent  ~(val by recipes)  2
     ==
 ::
@@ -142,7 +138,7 @@
       =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
       ;:  weld
         %+  expect-eq  !>(302)  !>(status-code.header)
-        %+  expect-eq  !>((crip (url-path-for-recipe:food-utils (~(got by recipes) the-id))))  !>((need (get-form-value:food-utils headers.header 'location')))
+        %+  expect-eq  !>((crip (en:recp-path:food-utils (~(got by recipes) the-id))))  !>((need (get-form-value:food-utils headers.header 'location')))
         %+  expect-eq  !>(~)  !>(data)
       ==
     ==
@@ -176,7 +172,7 @@
   ::  Rename a recipe
   ++  test-recipe-rename
     =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
-    =/  the-id=recipe-id  q:(need (de:base16:mimes:html '80345cb237c34773'))
+    =/  the-id=recipe-id  (de:recp-id:food-utils '80345cb237c34773')
     ;:  weld
       ::  Check recipe initial
       =/  =recipes  recipes:(get-recipes-from-agent next)
@@ -205,7 +201,7 @@
   ::  Add ingredient to recipe
   ++  test-recipe-add-ingredient
     =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
-    =/  the-id=recipe-id  q:(need (de:base16:mimes:html '80345cb237c34773'))
+    =/  the-id=recipe-id  (de:recp-id:food-utils '80345cb237c34773')
     =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
     ::  Rename the recipe
     =/  [=cards next2=agent]
@@ -233,7 +229,7 @@
   ::  Delete ingredient
   ++  test-recipe-delete-ingredient
     =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
-    =/  the-id=recipe-id  q:(need (de:base16:mimes:html '80345cb237c34773'))
+    =/  the-id=recipe-id  (de:recp-id:food-utils '80345cb237c34773')
     =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
     ::  Rename the recipe
     =/  [=cards next2=agent]
@@ -265,7 +261,7 @@
   ::  Add instruction to recipe
   ++  test-recipe-add-instruction
     =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
-    =/  the-id=recipe-id  q:(need (de:base16:mimes:html '80345cb237c34773'))
+    =/  the-id=recipe-id  (de:recp-id:food-utils '80345cb237c34773')
     =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
     ::  Rename the recipe
     =/  [=cards next2=agent]
@@ -293,7 +289,7 @@
   ::  Delete instruction
   ++  test-recipe-delete-instruction
     =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
-    =/  the-id=recipe-id  q:(need (de:base16:mimes:html 'de32bc69c2e6b69f'))
+    =/  the-id=recipe-id  (de:recp-id:food-utils 'de32bc69c2e6b69f')
     =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
     ::  Rename the recipe
     =/  [=cards next2=agent]
@@ -330,7 +326,7 @@
   ::  Move instruction
   ++  test-recipe-move-instruction
     =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
-    =/  the-id=recipe-id  q:(need (de:base16:mimes:html 'de32bc69c2e6b69f'))
+    =/  the-id=recipe-id  (de:recp-id:food-utils 'de32bc69c2e6b69f')
     =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
     ::  Rename the recipe
     =/  [=cards next2=agent]

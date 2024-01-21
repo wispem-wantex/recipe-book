@@ -20,7 +20,7 @@
     ?~  provenance.recipe
         ;br;  :: type checker requires a manx (can't use ~)
       ;h3: {<author:(need provenance.recipe)>}{"'"}s original recipe
-    ;form(action (weld (url-path-for-recipe:food-utils recipe) "/rename"), method "POST")
+    ;form(action (weld (en:recp-path:food-utils recipe) "/rename"), method "POST")
       ;input(type "text", name "new-name");
       ;input(type "submit", value "Rename recipe");
     ==
@@ -54,7 +54,7 @@
             ==
           ;tr
             ;td
-              ;form(action (weld (url-path-for-recipe:food-utils recipe) "/delete-ingredient/{<index>}"), method "POST", class "x-button")
+              ;form(action (weld (en:recp-path:food-utils recipe) "/delete-ingredient/{<index>}"), method "POST", class "x-button")
                 ;input(type "submit", value "\d7", title "Delete ingredient");
               ==
             ==
@@ -81,7 +81,7 @@
         ==
       ==
     ==
-    ;form(action (weld (url-path-for-recipe:food-utils recipe) "/add-ingredient"), method "POST", class "add-ingr")
+    ;form(action (weld (en:recp-path:food-utils recipe) "/add-ingredient"), method "POST", class "add-ingr")
       ;label: Ingredient:
       ;input(type "hidden", name "food-id", id "foodIdInput");
       ;input(type "text", list "ingredientOptions", name "food-name", id "foodNameInput");
@@ -105,7 +105,7 @@
         |=  [instr=@t index=@]
         :_  +(index)
         ;li
-          ;form(action (weld (url-path-for-recipe:food-utils recipe) "/delete-instr/{<index>}"), method "POST", class "x-button")
+          ;form(action (weld (en:recp-path:food-utils recipe) "/delete-instr/{<index>}"), method "POST", class "x-button")
             ;input(type "submit", value "\d7", title "Delete instruction");
           ==
           ;span(class "instr-number"): {(a-co:co (add 1 index))}.
@@ -116,7 +116,7 @@
           ==
         ==
     ==
-    ;form(action (weld (url-path-for-recipe:food-utils recipe) "/add-instr"), method "POST", class "add-instr")
+    ;form(action (weld (en:recp-path:food-utils recipe) "/add-instr"), method "POST", class "add-instr")
       ;textarea(name "instr", rows "4", cols "50");
       ;input(type "submit", value "Add instruction");
     ==
@@ -159,9 +159,8 @@
     ;ul
       ;*  %+  turn  ~(val by recipes:state)
         |=  [=recipe]
-        =/  url-helper  url-path-for-recipe:food-utils
         ;li
-          ;a(href (url-helper(base-path base-path) recipe)): {(trip name:recipe)}
+          ;a(href (~(en recp-path:food-utils base-path) recipe)): {(trip name:recipe)}
         ==
     ==
   ==

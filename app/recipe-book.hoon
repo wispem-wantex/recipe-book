@@ -9,7 +9,7 @@
 |%
 ++  help-recipe-id
   ^-  recipe-id
-  q:(need (de:base16:mimes:html '80345cb237c34773'))
+  (de:recp-id '80345cb237c34773')
 ++  help-instrs
   ^-  (list @t)
   :~  'This isn\'t a real recipe, it\'s just a sandbox for you to play in.  (It can get reset, so don\'t put an important recipe here.)'
@@ -41,7 +41,7 @@
   :*  %0
       (molt (turn initial-foods |=(f=food `(pair food-id food)`[id.f f])))
       %-  molt  :~
-        =/  id=recipe-id  q:(need (de:base16:mimes:html 'de32bc69c2e6b69f'))
+        =/  id=recipe-id  (de:recp-id 'de32bc69c2e6b69f')
         :-  id
         ^-  recipe
         :: Create a default recipe as a welcome
@@ -140,7 +140,6 @@
     ::
       %recipe-action
     =/  act  !<(action:food-actions vase)
-    ~&  "act: {<act>}"
     ?-  -.act
       ::
       :: remote request for our data; poke it back to them
@@ -200,8 +199,7 @@
           %-  render-sail-html
             =/  the-recipe  (~(got by recipes.state.resp.act) recipe-id.resp.act)
             =/  copy-recipe-path
-              =/  url-helper  url-path-for-recipe
-              %+  weld  (url-helper(base-path "/apps/recipe-book/pals/{<src.bowl>}") the-recipe)
+              %+  weld  (~(en recp-path "/apps/recipe-book/pals/{<src.bowl>}") the-recipe)
               "/copy"
             :-
               (trip name:the-recipe)
@@ -248,7 +246,7 @@
           original-eyre-id.act
           302
           ~
-          %redirect  (crip (url-path-for-recipe new-recipe))
+          %redirect  (crip (en:recp-path new-recipe))
         ==
       ==
     ==
@@ -565,14 +563,14 @@
         =.  name.recipe  name
         =.  id.recipe  (mod eny.bowl 0x1.0000.0000.0000.0000)
         :-
-          %-  send  [302 ~ [%redirect (crip (url-path-for-recipe recipe))]]
+          %-  send  [302 ~ [%redirect (crip (en:recp-path recipe))]]
         %=  state
           recipes  (~(put by recipes:state) id.recipe recipe)
         ==
       ==
       ::
         [%apps %recipe-book %recipes @ *]
-      =/  the-id  q:(need (de:base16:mimes:html (snag 3 `(list @t)`site)))
+      =/  the-id  (de:recp-id (snag 3 `(list @t)`site))
       =+  (~(get by recipes:state) the-id)                :: Find the recipe
       ?~  -  :_  state  [(send [404 ~ [%stock ~]])]       :: 404 if it's not found
       =/  the-recipe  (need -)                            :: First item from the found list
@@ -595,7 +593,7 @@
           ?~  data
             :_  state  %-  send  [400 ~ [%plain "No data received"]]
           :-
-            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(en:recp-path the-recipe))]]
           %=  state
             recipes  %+  ~(put by recipes)
               the-id
@@ -609,7 +607,7 @@
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'GET'
           :-
-            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(en:recp-path the-recipe))]]
           %=  state
             recipes  %+  ~(put by recipes)
               the-id
@@ -630,7 +628,7 @@
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'POST'
           :-
-            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(en:recp-path the-recipe))]]
           %=  state
             recipes  %+  ~(put by recipes)
               the-id
@@ -645,7 +643,7 @@
           ?~  data
             :_  state  %-  send  [400 ~ [%plain "No data received"]]
           :-
-            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(en:recp-path the-recipe))]]
           =/  new-ingredient=ingredient
             :-
               food-id=(scan (trip (need (get-form-value (need data) 'food-id'))) dem)
@@ -668,7 +666,7 @@
         ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
             %'POST'
           :-
-            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(en:recp-path the-recipe))]]
           %=  state
             recipes  %+  ~(put by recipes)
               the-id
@@ -683,7 +681,7 @@
           ?~  data
             :_  state  %-  send  [400 ~ [%plain "No data received"]]
           :-
-            %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
+            %-  send  [302 ~ [%redirect `@t`(crip `tape`(en:recp-path the-recipe))]]
           %=  state
             recipes  %+  ~(put by recipes)
               the-id
@@ -718,7 +716,7 @@
         [%apps %recipe-book %pals @ %recipes @ ~]
       =/  pal  (rash (snag 3 `(list @t)`site) ;~(pfix sig crub:so))
       ?>  =(-.pal %p)  :: make sure it parsed as a ship-name
-      =/  the-id=@t  q:(need (de:base16:mimes:html (snag 5 `(list @t)`site)))
+      =/  the-id=@t  (de:recp-id (snag 5 `(list @t)`site))
       ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
           %'GET'
         :_  state
@@ -731,7 +729,7 @@
         [%apps %recipe-book %pals @ %recipes @ %copy ~]
       =/  pal  (rash (snag 3 `(list @t)`site) ;~(pfix sig crub:so))
       ?>  =(-.pal %p)  :: make sure it parsed as a ship-name
-      =/  the-id=@t  q:(need (de:base16:mimes:html (snag 5 `(list @t)`site)))
+      =/  the-id=@t  (de:recp-id (snag 5 `(list @t)`site))
       ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
           %'POST'
         :_  state
