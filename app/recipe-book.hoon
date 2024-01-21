@@ -28,6 +28,7 @@
   ^-  recipe
   =/  ingredients  ^-  (list ingredient)
     :~  [food-id=44 amount=[rs=.300 units=%g]]
+        [food-id=10 amount=[rs=.200 units=%g]]
     ==
   :*  id=help-recipe-id
       name='How to use this app :)'
@@ -657,7 +658,6 @@
         =/  data  (parse-form-body request.inbound-request)
         ?~  data
           :_  state  %-  send  [400 ~ [%plain "No data received"]]
-        ~&  >>>  data
         :-
           %-  send  [302 ~ [%redirect `@t`(crip `tape`(url-path-for-recipe the-recipe))]]
         =/  new-ingredient=ingredient

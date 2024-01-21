@@ -172,4 +172,121 @@
       =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
       %+  expect-eq  !>(404)  !>(status-code.header)
     ==
+  ::
+  ::  Rename a recipe
+  ++  test-recipe-rename
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    =/  the-id=recipe-id  q:(need (de:base16:mimes:html '80345cb237c34773'))
+    ;:  weld
+      ::  Check recipe initial
+      =/  =recipes  recipes:(get-recipes-from-agent next)
+      %+  expect-eq  !>('How to use this app :)')  !>(name:(~(got by recipes) the-id))
+      ::  Rename the recipe
+      =/  [=cards next2=agent]
+        %+  ~(on-poke next fake-bowl)
+          %handle-http-request
+        !>  ^-  [@ta inbound-request:eyre]
+        :-  'some eyre id whatever'
+        [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/80345cb237c34773/rename' ~ `(as-octs:mimes:html 'new-name=How+to+not+use+this+app+%3A%29')]
+      ;:  weld
+        :: Check state updates
+        =/  =recipes  recipes:(get-recipes-from-agent next2)
+        %+  expect-eq  !>('How to not use this app :)')  !>(name:(~(got by recipes) the-id))
+        :: Check HTTP response
+        =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
+        ;:  weld
+          %+  expect-eq  !>(302)  !>(status-code.header)
+          %+  expect-eq  !>('/apps/recipe-book/recipes/80345cb237c34773')  !>((need (get-form-value:food-utils headers.header 'location')))
+          %+  expect-eq  !>(~)  !>(data)
+        ==
+      ==
+    ==
+  ::
+  ::  Add ingredient to recipe
+  ++  test-recipe-add-ingredient
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    =/  the-id=recipe-id  q:(need (de:base16:mimes:html '80345cb237c34773'))
+    =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
+    ::  Rename the recipe
+    =/  [=cards next2=agent]
+      %+  ~(on-poke next fake-bowl)
+        %handle-http-request
+      !>  ^-  [@ta inbound-request:eyre]
+      :-  'some eyre id whatever'
+      [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/80345cb237c34773/add-ingredient' ~ `(as-octs:mimes:html 'food-id=9&amount=300&units=ct')]
+    ;:  weld
+      :: Check HTTP response
+      =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
+      ;:  weld
+        %+  expect-eq  !>(302)  !>(status-code.header)
+        %+  expect-eq  !>('/apps/recipe-book/recipes/80345cb237c34773')  !>((need (get-form-value:food-utils headers.header 'location')))
+        %+  expect-eq  !>(~)  !>(data)
+      ==
+      :: Check state updates
+      =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
+      ;:  weld
+        %+  expect-eq  !>((add 1 (lent ingredients.initial-recipe)))  !>((lent ingredients.new-recipe))
+        %+  expect-eq  !>(`ingredient`[food-id=9 amount=[.300 %ct]])  !>((rear ingredients.new-recipe))
+      ==
+    ==
+  ::
+  ::  Delete ingredient
+  ++  test-recipe-delete-ingredient
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    =/  the-id=recipe-id  q:(need (de:base16:mimes:html '80345cb237c34773'))
+    =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
+    ::  Rename the recipe
+    =/  [=cards next2=agent]
+      %+  ~(on-poke next fake-bowl)
+        %handle-http-request
+      !>  ^-  [@ta inbound-request:eyre]
+      :-  'some eyre id whatever'
+      [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/80345cb237c34773/delete-ingredient/0' ~ ~]
+    ;:  weld
+      :: Check HTTP response
+      =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
+      ;:  weld
+        %+  expect-eq  !>(302)  !>(status-code.header)
+        %+  expect-eq  !>('/apps/recipe-book/recipes/80345cb237c34773')  !>((need (get-form-value:food-utils headers.header 'location')))
+        %+  expect-eq  !>(~)  !>(data)
+      ==
+      :: Check state updates
+      =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
+      ;:  weld
+        %+  expect-eq  !>((sub (lent ingredients.initial-recipe) 1))  !>((lent ingredients.new-recipe))
+        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 1..end is now in position 0..end-1
+          `(list @)`(gulf 0 (dec (lent ingredients.new-recipe)))
+          |=  [i=@]
+          ^-  tang
+          %+  expect-eq  !>((snag i ingredients.new-recipe))  !>((snag +(i) ingredients.initial-recipe))
+      ==
+    ==
+  ::
+  ::  Add instruction to recipe
+  ++  test-recipe-add-instruction
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    =/  the-id=recipe-id  q:(need (de:base16:mimes:html '80345cb237c34773'))
+    =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
+    ::  Rename the recipe
+    =/  [=cards next2=agent]
+      %+  ~(on-poke next fake-bowl)
+        %handle-http-request
+      !>  ^-  [@ta inbound-request:eyre]
+      :-  'some eyre id whatever'
+      [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/80345cb237c34773/add-instr' ~ `(as-octs:mimes:html 'instr=Blah+blah+blah+something%2C+something+else%21')]
+    ;:  weld
+      :: Check HTTP response
+      =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
+      ;:  weld
+        %+  expect-eq  !>(302)  !>(status-code.header)
+        %+  expect-eq  !>('/apps/recipe-book/recipes/80345cb237c34773')  !>((need (get-form-value:food-utils headers.header 'location')))
+        %+  expect-eq  !>(~)  !>(data)
+      ==
+      :: Check state updates
+      =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
+      ;:  weld
+        %+  expect-eq  !>((add 1 (lent instructions.initial-recipe)))  !>((lent instructions.new-recipe))
+        %+  expect-eq  !>('Blah blah blah something, something else!')  !>((rear instructions.new-recipe))
+      ==
+    ==
 --
