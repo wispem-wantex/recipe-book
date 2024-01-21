@@ -289,4 +289,84 @@
         %+  expect-eq  !>('Blah blah blah something, something else!')  !>((rear instructions.new-recipe))
       ==
     ==
+  ::
+  ::  Delete instruction
+  ++  test-recipe-delete-instruction
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    =/  the-id=recipe-id  q:(need (de:base16:mimes:html 'de32bc69c2e6b69f'))
+    =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
+    ::  Rename the recipe
+    =/  [=cards next2=agent]
+      %+  ~(on-poke next fake-bowl)
+        %handle-http-request
+      !>  ^-  [@ta inbound-request:eyre]
+      :-  'some eyre id whatever'
+      [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/de32bc69c2e6b69f/delete-instr/4' ~ ~]
+    ;:  weld
+      :: Check HTTP response
+      =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
+      ;:  weld
+        %+  expect-eq  !>(302)  !>(status-code.header)
+        %+  expect-eq  !>('/apps/recipe-book/recipes/de32bc69c2e6b69f')  !>((need (get-form-value:food-utils headers.header 'location')))
+        %+  expect-eq  !>(~)  !>(data)
+      ==
+      :: Check state updates
+      =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
+      ;:  weld
+        %+  expect-eq  !>((sub (lent instructions.initial-recipe) 1))  !>((lent instructions.new-recipe))
+        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 0..3 is unchanged
+          `(list @)`(gulf 0 3)
+          |=  [i=@]
+          ^-  tang
+          %+  expect-eq  !>((snag i instructions.new-recipe))  !>((snag i instructions.initial-recipe))
+        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 5..end is now in position 4..end-1
+          `(list @)`(gulf 5 (dec (lent instructions.new-recipe)))
+          |=  [i=@]
+          ^-  tang
+          %+  expect-eq  !>((snag i instructions.new-recipe))  !>((snag +(i) instructions.initial-recipe))
+      ==
+    ==
+  ::
+  ::  Move instruction
+  ++  test-recipe-move-instruction
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    =/  the-id=recipe-id  q:(need (de:base16:mimes:html 'de32bc69c2e6b69f'))
+    =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
+    ::  Rename the recipe
+    =/  [=cards next2=agent]
+      %+  ~(on-poke next fake-bowl)
+        %handle-http-request
+      !>  ^-  [@ta inbound-request:eyre]
+      :-  'some eyre id whatever'
+      [%.y %.y *address:eyre %'GET' '/apps/recipe-book/recipes/de32bc69c2e6b69f/move-instr/4/1' ~ ~]
+    ;:  weld
+      :: Check HTTP response
+      =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
+      ;:  weld
+        %+  expect-eq  !>(302)  !>(status-code.header)
+        %+  expect-eq  !>('/apps/recipe-book/recipes/de32bc69c2e6b69f')  !>((need (get-form-value:food-utils headers.header 'location')))
+        %+  expect-eq  !>(~)  !>(data)
+      ==
+      :: Check state updates
+      =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
+      ;:  weld
+        %+  expect-eq  !>((lent instructions.initial-recipe))  !>((lent instructions.new-recipe))
+        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 0..0 is unchanged
+          `(list @)`(gulf 0 0)
+          |=  [i=@]
+          ^-  tang
+          %+  expect-eq  !>((snag i instructions.new-recipe))  !>((snag i instructions.initial-recipe))
+        %+  expect-eq  !>((snag 1 instructions.new-recipe))  !>((snag 4 instructions.initial-recipe))
+        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 1..3 is moved ahead 1 position
+          `(list @)`(gulf 1 3)
+          |=  [i=@]
+          ^-  tang
+          %+  expect-eq  !>((snag +(i) instructions.new-recipe))  !>((snag i instructions.initial-recipe))
+        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 5..end is unchanged
+          `(list @)`(gulf 5 (dec (lent instructions.new-recipe)))
+          |=  [i=@]
+          ^-  tang
+          %+  expect-eq  !>((snag i instructions.new-recipe))  !>((snag i instructions.initial-recipe))
+      ==
+    ==
 --
