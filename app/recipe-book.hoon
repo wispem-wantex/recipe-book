@@ -692,13 +692,18 @@
       ::
         [%apps %recipe-book %pals ~]
       ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
-          %'POST'
+          %'POST'  :: TODO: why is this POST?
         :_  state
-        =/  pal=tape
+        =/  query=tape
           (trip (need (get-form-value (need (parse-form-body request.inbound-request)) 'pal')))
-        ?~  (rust pal ;~(pfix sig crub:so))
-          %-  send  [427 ~ [%plain "Invalid ship: {<pal>}"]]
-        %-  send  [302 ~ [%redirect (crip (weld "/apps/recipe-book/pals/" pal))]]
+        =/  result
+          (parse-recipe-link query)
+        ?~  result
+          %-  send  [427 ~ [%plain "Invalid ship or path: {<pal>}"]]
+        ?~  id.u.result
+          %-  send  [302 ~ [%redirect (crip (weld "/apps/recipe-book/pals/" (scow %p pal.u.result)))]]
+        =/  the-path  (~(en recp-path (weld "/apps/recipe-book/pals/" (scow %p pal.u.result))) %*(. *recipe id u.id.u.result))
+        %-  send  [302 ~ [%redirect (crip the-path)]]
       ==
       ::
         [%apps %recipe-book %pals @ ~]

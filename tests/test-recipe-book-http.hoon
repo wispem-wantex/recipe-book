@@ -35,13 +35,12 @@
     ==
   ++  unwrap-pass-card
     |=  =card
-    ^-  [=path =task]
-    ::=+  !<([%pass =path =task] card)
+    ^-  [=path =ship agent-name=term =task]
     ?+  -.card  !!
         [%pass]
       ?+  -.q.card  !!
           [%agent]
-        [p.card task.q.card]
+        [p.card ship.q.card name.q.card task.q.card]
       ==
     ==
   ::
@@ -55,7 +54,7 @@
     =/  poke=cage  [%recipe-action !>(`action:food-actions`[%req eyre-id [%list-recipes ~]])]
     =+  [effects2=cards next=agent]=(~(on-poke `agent`current-agent fake-bowl) poke)
     =/  thecard=card  (head effects2)
-    =/  [=path thetask=task]  (unwrap-pass-card thecard)
+    =/  thetask=task  task:(unwrap-pass-card thecard)
     ?>  ?=  %poke  -.thetask
     =/  thecage=cage  +.thetask
     :*
@@ -108,7 +107,16 @@
             leaf+"Actual redirect:   {<actual-redirect>}"
         ==
       %+  expect-eq  !>(~)  !>(data)
-    ==
+    ==  ::
+  :: Helper function to assert that an HTTP response cardset indicates a certain HTTP status
+  ++  expect-http-status
+    |=  [=cards expected-status-code=@]
+    ^-  tang
+    =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
+    ?:  =(expected-status-code status-code.header)  ~
+      :~  leaf+"Expected: HTTP {<expected-status-code>}"
+          leaf+"Actual:   HTTP {<status-code.header>}"
+      ==
 --
 ::
 |%
@@ -358,6 +366,111 @@
           |=  [i=@]
           ^-  tang
           %+  expect-eq  !>((snag i instructions.new-recipe))  !>((snag i instructions.initial-recipe))
+      ==
+    ==
+  ::
+  :: Search bar queries
+  :: ------------------
+  ::
+  ::  Search for just a user (~sampel-palnet)
+  ++  test-search-bar-pal-only
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    :: Do a search for "~sampel-palnet"
+    =/  [=cards next2=agent]
+      %+  ~(on-poke next fake-bowl)
+        %handle-http-request
+      !>  ^-  [@ta inbound-request:eyre]
+      :-  'some eyre id whatever'
+      [%.y %.y *address:eyre %'POST' '/apps/recipe-book/pals' ~ `(as-octs:mimes:html 'pal=~sampel-palnet')]
+    :: Check HTTP response
+    %+  expect-redirected-to  cards  '/apps/recipe-book/pals/~sampel-palnet'
+  ::
+  ::  Search for a friend's recipe
+  ++  test-search-bar-with-recipe-link
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    :: Do a search for "~sampel-palnet/123456789abcdef0/some-recipe-link"
+    =/  [=cards next2=agent]
+      %+  ~(on-poke next fake-bowl)
+        %handle-http-request
+      !>  ^-  [@ta inbound-request:eyre]
+      :-  'some eyre id whatever'
+      [%.y %.y *address:eyre %'POST' '/apps/recipe-book/pals' ~ `(as-octs:mimes:html 'pal=~sampel-palnet%2F123456789abcdef0%2Fsome-recipe-link')]
+    :: Check HTTP response
+    %+  expect-redirected-to  cards  '/apps/recipe-book/pals/~sampel-palnet/recipes/123456789abcdef0'
+  ::
+  ::  Search for nonsense
+  ++  test-search-bar-with-gibberish
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    :: Do a search for "fjakwelfj"
+    =/  [=cards next2=agent]
+      %+  ~(on-poke next fake-bowl)
+        %handle-http-request
+      !>  ^-  [@ta inbound-request:eyre]
+      :-  'some eyre id whatever'
+      [%.y %.y *address:eyre %'POST' '/apps/recipe-book/pals' ~ `(as-octs:mimes:html 'pal=fjakwelfj')]
+    :: Check HTTP response
+    %+  expect-http-status  cards  427
+  ::
+  ::  Trigger remote request for recipes
+  ++  test-trigger-remote-recipes-query
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    =/  eyre-id  'some eyre id whatever'
+    =/  [=cards next2=agent]
+      %+  ~(on-poke next fake-bowl)
+        %handle-http-request
+      !>  ^-  [@ta inbound-request:eyre]
+      :-  eyre-id
+      [%.y %.y *address:eyre %'GET' '/apps/recipe-book/pals/~sampel-palnet' ~ ~]
+    :: Check Ames response
+    ;:  weld
+      %+  expect-lent  cards  1
+      =/  card-contents  (unwrap-pass-card (head cards))
+      ;:  weld
+        %+  expect-eq  !>(~sampel-palnet)  !>(ship.card-contents)
+        %+  expect-eq  !>(%recipe-book)    !>(agent-name.card-contents)
+        %+  expect-eq  !>(`task`[%poke `cage`[%recipe-action !>(`action:food-actions`[%req eyre-id %list-recipes ~])]])    !>(task.card-contents)
+      ==
+    ==
+  ::
+  ::  Trigger remote request for a particular recipe
+  ++  test-trigger-remote-recipe-detail-query
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    =/  eyre-id  'some eyre id whatever'
+    =/  [=cards next2=agent]
+      %+  ~(on-poke next fake-bowl)
+        %handle-http-request
+      !>  ^-  [@ta inbound-request:eyre]
+      :-  eyre-id
+      [%.y %.y *address:eyre %'GET' '/apps/recipe-book/pals/~sampel-palnet/recipes/12345678' ~ ~]
+    :: Check Ames response
+    ;:  weld
+      %+  expect-lent  cards  1
+      =/  card-contents  (unwrap-pass-card (head cards))
+      ;:  weld
+        %+  expect-eq  !>(~sampel-palnet)  !>(ship.card-contents)
+        %+  expect-eq  !>(%recipe-book)    !>(agent-name.card-contents)
+        %+  expect-eq  !>(`task`[%poke `cage`[%recipe-action !>(`action:food-actions`[%req eyre-id %get-recipe 0x1234.5678])]])    !>(task.card-contents)
+      ==
+    ==
+  ::
+  ::  Trigger remote request to copy a recipe
+  ++  test-trigger-remote-copy-recipe-query
+    =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
+    =/  eyre-id  'some eyre id whatever'
+    =/  [=cards next2=agent]
+      %+  ~(on-poke next fake-bowl)
+        %handle-http-request
+      !>  ^-  [@ta inbound-request:eyre]
+      :-  eyre-id
+      [%.y %.y *address:eyre %'POST' '/apps/recipe-book/pals/~sampel-palnet/recipes/12345678/copy' ~ ~]
+    :: Check Ames response
+    ;:  weld
+      %+  expect-lent  cards  1
+      =/  card-contents  (unwrap-pass-card (head cards))
+      ;:  weld
+        %+  expect-eq  !>(~sampel-palnet)  !>(ship.card-contents)
+        %+  expect-eq  !>(%recipe-book)    !>(agent-name.card-contents)
+        %+  expect-eq  !>(`task`[%poke `cage`[%recipe-action !>(`action:food-actions`[%req eyre-id %copy-recipe 0x1234.5678])]])    !>(task.card-contents)
       ==
     ==
 --
