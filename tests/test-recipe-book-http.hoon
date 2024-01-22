@@ -17,7 +17,22 @@
 --
 ::
 =>
+::
+:: Some test helpers
 |%
+  ::
+  :: First, some helpers for dealing with cards.  I don't understand what I have to do to convince
+  :: the type checker, so the ugliness is in one place here.
+  ++  get-cage-from-fact-card
+    |=  [=card]
+    ^-  cage
+    ?+  -.card  !!
+        [%give]
+      ?+  -.p.card  !!
+          [%fact]
+        cage.p.card
+      ==
+    ==
   ++  unwrap-pass-card
     |=  =card
     ^-  [=path =task]
@@ -29,9 +44,12 @@
         [p.card task.q.card]
       ==
     ==
+  ::
+  :: Call the `on-poke` arm with `%list-recipes` to get all the recipes from an agent.
+  :: The returned tang is probably not that useful but it's there, w/e
   ++  get-recipes-from-agent
     |=  [current-agent=agent]
-    ^-  [tang =recipes next=agent]
+    ^-  [tang =recipes]
     =/  eyre-id=@ta  'blehblehbleh'
     :: Poke the agent to list its recipes
     =/  poke=cage  [%recipe-action !>(`action:food-actions`[%req eyre-id [%list-recipes ~]])]
@@ -53,23 +71,17 @@
           recipes.state.resp.act
         ==
       ==
-      ::
-      next  :: TODO: don't return this, it should be a read-only request
     ==
-  ++  get-cage-from-fact-card
-    |=  [=card]
-    ^-  cage
-    ?+  -.card  !!
-        [%give]
-      ?+  -.p.card  !!
-          [%fact]
-        cage.p.card
-      ==
-    ==
+  ::
+  :: A typical HTTP response is 3 Gall cards:
+  :: - 1 for the header
+  :: - 1 for the body (data)
+  :: - 1 %kick to indicate end-of-response (stop subscribing to that path).
   ++  parse-http-response-cards
     |=  [=cards]
     ^-  [=response-header:http data=(unit octs)]
     ?>  =(3 (lent cards))  :: 1 header, 1 data, and 1 kick
+    :: TODO: check the third card is actually a %kick
     =/  header-card  (snag 0 cards)
     =/  header-cage  (get-cage-from-fact-card header-card)
     ?>  =(%http-response-header -.header-cage)
@@ -79,6 +91,24 @@
     :-
       !<(response-header:http +.header-cage)
     !<((unit octs) +.data-cage)
+  ::
+  :: Helper function to assert that an HTTP response cardset indicates a HTTP redirection
+  ++  expect-redirected-to
+    |=  [=cards redirected-to=@t]
+    ^-  tang
+    =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
+    ;:  weld
+      ?:  =(302 status-code.header)  ~
+        :~  leaf+"Expected: redirect (HTTP 302)"
+            leaf+"Actual:   HTTP {<status-code.header>}"
+        ==
+      =/  actual-redirect=@t  (need (get-form-value:food-utils headers.header 'location'))
+      ?:  =(actual-redirect redirected-to)  ~
+        :~  leaf+"Expected redirect: {<redirected-to>}"
+            leaf+"Actual redirect:   {<actual-redirect>}"
+        ==
+      %+  expect-eq  !>(~)  !>(data)
+    ==
 --
 ::
 |%
@@ -89,7 +119,7 @@
     :: Init the agent
     =+  [effects=cards next=agent]=~(on-init recipe-book fake-bowl)
     :: Check that it has a Help and a Default recipe
-    =/  [tangs=tang recipes=recipes next=agent]  (get-recipes-from-agent next)
+    =/  [tangs=tang recipes=recipes]  (get-recipes-from-agent next)
     ;:  weld
       tangs
       %-  expect  !>((~(has by recipes) (de:recp-id:food-utils '80345cb237c34773')))
@@ -103,7 +133,7 @@
     =/  state-vase  ~(on-save `agent`next fake-bowl)                         :: Save it
     =/  [effects=cards next2=agent]  (~(on-load next fake-bowl) state-vase)  :: Load it
     :: Check state of the reloaded agent
-    =/  [tangs=tang recipes=recipes next3=agent]  (get-recipes-from-agent next2)
+    =/  [tangs=tang recipes=recipes]  (get-recipes-from-agent next2)
     ;:  weld
       tangs
       %-  expect  !>((~(has by recipes) (de:recp-id:food-utils '80345cb237c34773')))
@@ -124,7 +154,7 @@
       !>  ^-  [@ta inbound-request:eyre]
       :-  'some eyre id whatever'
       [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/new' ~ `(as-octs:mimes:html 'name=New+Recipe')]
-    =/  [tangs=tang recipes=recipes next2=agent]  (get-recipes-from-agent next2)
+    =/  [tangs=tang recipes=recipes]  (get-recipes-from-agent next2)
     =/  the-id  0x5555.6666.7777.8888
     ;:  weld
       :: Check state updates
@@ -135,12 +165,7 @@
         tangs
       ==
       :: Check HTTP response
-      =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
-      ;:  weld
-        %+  expect-eq  !>(302)  !>(status-code.header)
-        %+  expect-eq  !>((crip (en:recp-path:food-utils (~(got by recipes) the-id))))  !>((need (get-form-value:food-utils headers.header 'location')))
-        %+  expect-eq  !>(~)  !>(data)
-      ==
+      %+  expect-redirected-to  cards  (crip (en:recp-path:food-utils (~(got by recipes) the-id)))
     ==
   ::
   ::  Recipe detail page
@@ -189,12 +214,7 @@
         =/  =recipes  recipes:(get-recipes-from-agent next2)
         %+  expect-eq  !>('How to not use this app :)')  !>(name:(~(got by recipes) the-id))
         :: Check HTTP response
-        =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
-        ;:  weld
-          %+  expect-eq  !>(302)  !>(status-code.header)
-          %+  expect-eq  !>('/apps/recipe-book/recipes/80345cb237c34773')  !>((need (get-form-value:food-utils headers.header 'location')))
-          %+  expect-eq  !>(~)  !>(data)
-        ==
+        %+  expect-redirected-to  cards  '/apps/recipe-book/recipes/80345cb237c34773'
       ==
     ==
   ::
@@ -212,12 +232,7 @@
       [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/80345cb237c34773/add-ingredient' ~ `(as-octs:mimes:html 'food-id=9&amount=300&units=ct')]
     ;:  weld
       :: Check HTTP response
-      =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
-      ;:  weld
-        %+  expect-eq  !>(302)  !>(status-code.header)
-        %+  expect-eq  !>('/apps/recipe-book/recipes/80345cb237c34773')  !>((need (get-form-value:food-utils headers.header 'location')))
-        %+  expect-eq  !>(~)  !>(data)
-      ==
+      %+  expect-redirected-to  cards  '/apps/recipe-book/recipes/80345cb237c34773'
       :: Check state updates
       =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
       ;:  weld
@@ -240,12 +255,7 @@
       [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/80345cb237c34773/delete-ingredient/0' ~ ~]
     ;:  weld
       :: Check HTTP response
-      =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
-      ;:  weld
-        %+  expect-eq  !>(302)  !>(status-code.header)
-        %+  expect-eq  !>('/apps/recipe-book/recipes/80345cb237c34773')  !>((need (get-form-value:food-utils headers.header 'location')))
-        %+  expect-eq  !>(~)  !>(data)
-      ==
+      %+  expect-redirected-to  cards  '/apps/recipe-book/recipes/80345cb237c34773'
       :: Check state updates
       =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
       ;:  weld
@@ -272,12 +282,7 @@
       [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/80345cb237c34773/add-instr' ~ `(as-octs:mimes:html 'instr=Blah+blah+blah+something%2C+something+else%21')]
     ;:  weld
       :: Check HTTP response
-      =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
-      ;:  weld
-        %+  expect-eq  !>(302)  !>(status-code.header)
-        %+  expect-eq  !>('/apps/recipe-book/recipes/80345cb237c34773')  !>((need (get-form-value:food-utils headers.header 'location')))
-        %+  expect-eq  !>(~)  !>(data)
-      ==
+      %+  expect-redirected-to  cards  '/apps/recipe-book/recipes/80345cb237c34773'
       :: Check state updates
       =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
       ;:  weld
@@ -300,12 +305,7 @@
       [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/de32bc69c2e6b69f/delete-instr/4' ~ ~]
     ;:  weld
       :: Check HTTP response
-      =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
-      ;:  weld
-        %+  expect-eq  !>(302)  !>(status-code.header)
-        %+  expect-eq  !>('/apps/recipe-book/recipes/de32bc69c2e6b69f')  !>((need (get-form-value:food-utils headers.header 'location')))
-        %+  expect-eq  !>(~)  !>(data)
-      ==
+      %+  expect-redirected-to  cards  '/apps/recipe-book/recipes/de32bc69c2e6b69f'
       :: Check state updates
       =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
       ;:  weld
@@ -337,12 +337,7 @@
       [%.y %.y *address:eyre %'GET' '/apps/recipe-book/recipes/de32bc69c2e6b69f/move-instr/4/1' ~ ~]
     ;:  weld
       :: Check HTTP response
-      =/  [header=response-header:http data=(unit octs)]  (parse-http-response-cards cards)
-      ;:  weld
-        %+  expect-eq  !>(302)  !>(status-code.header)
-        %+  expect-eq  !>('/apps/recipe-book/recipes/de32bc69c2e6b69f')  !>((need (get-form-value:food-utils headers.header 'location')))
-        %+  expect-eq  !>(~)  !>(data)
-      ==
+      %+  expect-redirected-to  cards  '/apps/recipe-book/recipes/de32bc69c2e6b69f'
       :: Check state updates
       =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
       ;:  weld
