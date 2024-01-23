@@ -3,7 +3,7 @@
 ::
 =<
 ::
-|_  [state=versioned-state]
+|_  [=state]
 ::
 ::  Renderer for a recipe detail page
 ++  recipe-detail

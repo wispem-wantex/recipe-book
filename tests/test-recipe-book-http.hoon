@@ -67,7 +67,7 @@
           [%resp]
         ?+  -.resp.act  !!
             [%list-recipes]
-          recipes.state.resp.act
+          recipes:(load-state state.resp.act)
         ==
       ==
     ==
