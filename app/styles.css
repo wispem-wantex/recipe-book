@@ -3,13 +3,19 @@ body {
 	flex-direction: row;
 }
 nav {
-	width: 10%;
+    width: 20em;
+    max-width: 20%;
     border-right: 1px solid #ddd;
+}
+input#search-bar {
+	max-width: 96%;
+	width: 20em;
 }
 main {
 	flex-grow: 1;
 	margin-right: 10%;
     padding-left: 2em;
+    height: fit-content;
 }
 
 input[type='text'], select, textarea {

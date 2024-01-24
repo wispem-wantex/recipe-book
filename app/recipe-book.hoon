@@ -251,8 +251,8 @@
           ;form(action "/apps/recipe-book/pals", method "POST")
             :: Enclosed in {} to fix syntax highlighter
             ;label: {"Check out a friend's recipes"}
-            ;input(name "pal", placeholder "~zod");
-            ;input(type "submit", value "Go");
+            ;input(name "pal", id "search-bar", placeholder "~zod");
+            ;input(type "submit", id "search-bar-submit", value "Go");
           ==
         ==
       ==
