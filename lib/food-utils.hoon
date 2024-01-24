@@ -77,7 +77,7 @@
       phosphorus=.0.0
       iron=.0.0
       zinc=.0.0
-      mass=.100.0
+      mass=(unformat:fmt (find-item 'mass'))
       density=.-1.0
       price=.0.0
       cook-ratio=.0

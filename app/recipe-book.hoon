@@ -405,7 +405,7 @@
             [200 ~ (render-sail-html "Ingredient: {(trip name.food)}" sailhtml)]
           :~
             ;h1: {(trip name:food)}
-            ;form(action (url-path-for food), method "POST")
+            ;form(action (url-path-for food), method "POST", class "ingredient-editor")
               ;div(class "labelled-input")
                 ;label: Name:
                 ;input(type "text", name "name", value (trip name:food));
@@ -429,6 +429,16 @@
               ;div(class "labelled-input")
                 ;label: Sugar:
                 ;input(type "text", name "sugar", value (format:fmt sugar:food));
+              ==
+              ;div(class "labelled-input")
+                ;label
+                  ;span(class "mass-title-parent")
+                    ; (?)
+                    ;div(class "title"): Mass of one 'unit' of this food
+                  ==
+                  ; Mass:
+                ==
+                ;input(type "text", name "mass", value (format:fmt mass:food));
               ==
               ;input(type "submit", value "Save");
             ==

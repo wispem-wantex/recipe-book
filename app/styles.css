@@ -1,6 +1,6 @@
 body {
-	display: flex;
-	flex-direction: row;
+    display: flex;
+    flex-direction: row;
 }
 nav {
     width: 20em;
@@ -8,12 +8,12 @@ nav {
     border-right: 1px solid #ddd;
 }
 input#search-bar {
-	max-width: 96%;
-	width: 20em;
+    max-width: 96%;
+    width: 20em;
 }
 main {
-	flex-grow: 1;
-	margin-right: 10%;
+    flex-grow: 1;
+    margin-right: 10%;
     padding-left: 2em;
     height: fit-content;
 }
@@ -23,41 +23,62 @@ input[type='text'], select, textarea {
 }
 
 div.labelled-input {
-	display: flex;
+    display: flex;
 }
-
 div.labelled-input label {
-	flex-basis: 4em;
+    flex-basis: 8em;
+    text-align: right;
+    margin-right: 0.3em;
 }
 div.labelled-input input {
-	flex-basis: 30em;
+    flex-basis: 30em;
+}
+div.labelled-input .mass-title-parent {
+    color: #888;
+    position: relative;
+}
+.ingredient-editor input[type="submit"] {
+    margin: 2em 0px 0px 36em;
+}
+
+.title {
+    display: none;
+    position: absolute;
+    width: max-content;
+    border: 1px solid black;
+    padding: 0.2em;
+    background-color: white;
+    margin-top: 0.3em;
+}
+.mass-title-parent:focus .title, .mass-title-parent:hover .title {
+    display: revert;
 }
 
 table {
-	border-collapse: collapse;
+    border-collapse: collapse;
 }
 th {
-	padding: 0 0.3em;
+    padding: 0 0.3em;
 }
 td {
-	text-align: right;
-	padding: 0.3em 0.6em;
+    text-align: right;
+    padding: 0.3em 0.6em;
 }
 
 td.ingr-name {
-	text-align: left;
+    text-align: left;
 }
 
 td.total {
-	border-top: 1px solid darkgray;
+    border-top: 1px solid darkgray;
 }
 
 form.x-button {
-	display: inline;
-	margin: 0;
+    display: inline;
+    margin: 0;
 }
 form.x-button input {
-	padding: 0.1em 0.3em;
+    padding: 0.1em 0.3em;
 }
 
 form.add-instr {
@@ -66,21 +87,21 @@ form.add-instr {
 }
 
 ol#instructions {
-	padding: 0 1em;
+    padding: 0 1em;
 }
 
 ol#instructions li {
-	list-style: none;
-	display: flex;
-	align-items: flex-start;
-	margin: 0.3em 0;
+    list-style: none;
+    display: flex;
+    align-items: flex-start;
+    margin: 0.3em 0;
 }
 
 ol#instructions li span {
-	margin-top: 0.2em;
+    margin-top: 0.2em;
 }
 ol#instructions li span p {
-	margin: 0 0 0.5em 0;
+    margin: 0 0 0.5em 0;
 }
 
 ol#instructions li .instr-number{
@@ -100,10 +121,10 @@ img#logo {
 }
 
 div.original-author-container {
-	display: flex;
-	align-items: center;
-	gap: 2em;
+    display: flex;
+    align-items: center;
+    gap: 2em;
 }
 div.original-author-container form {
-	margin: 0;
+    margin: 0;
 }
