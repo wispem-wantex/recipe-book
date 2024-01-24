@@ -4,7 +4,7 @@
     base+'recipe-book'
     image+'https://raw.githubusercontent.com/wispem-wantex/recipe-book/master/app/chili-garlic.png'
     site+/apps/recipe-book
-    version+[1 0 2]
+    version+[1 0 3]
     website+'https://github.com/wispem-wantex/recipe-book'
     license+'MIT'
 ==
