@@ -23,12 +23,21 @@ input[type='text'], select, textarea {
 }
 
 div.nothing {
-	/* Used because the Hoon type checker requires a `manx` sometimes (can't use ~) */
-	display: none;
+    /* Used because the Hoon type checker requires a `manx` sometimes (can't use ~) */
+    display: none;
 }
 
-button#share-this-recipe {
+.share-container {
+    display: flex;
     margin: 0em 0 1em 0.2em;
+}
+button#share-this-recipe {
+}
+#shareLink {
+    width: 30em;
+}
+#shareLink.hidden {
+    display: none;
 }
 
 div.labelled-input {

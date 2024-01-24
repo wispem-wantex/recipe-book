@@ -21,8 +21,10 @@
         ;div(class "nothing");  :: type checker requires a manx (can't use ~)
       ;h3: {<author:(need provenance.recipe)>}{"'"}s original recipe
     =/  share-link  ;:(weld "{<author>}/" (trip (en:recp-id:food-utils id.recipe)) "/" (scag 30 (slugify:misc-utils (trip name:recipe))))
-    =/  scrpt  "navigator.clipboard.writeText({<share-link>}); alert('Recipe link copied to clipboard!')"
-    ;button(id "share-this-recipe", onclick scrpt): Share this recipe
+    ;div(class "share-container")
+      ;button(id "share-this-recipe", onclick "shareLink.classList.remove('hidden'); shareLink.disabled = false; shareLink.select(); shareLink.focus();"): Share this recipe
+      ;input(type "text", class "hidden", id "shareLink", value share-link);
+    ==
     ;form(action (weld (en:recp-path:food-utils recipe) "/rename"), method "POST")
       ;input(type "text", name "new-name");
       ;input(type "submit", value "Rename recipe");

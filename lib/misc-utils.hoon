@@ -9,8 +9,8 @@
     ~
   ::
   =/  i  (fall (find sep txt) (lent txt))
-  :-  (scag i `tape`txt) :: the part before the sep
-  $(txt (slag (add (lent sep) i) `tape`txt)) :: keep splitting the part after the sep
+  :-  (scag i `tape`txt)                      :: the part before the sep
+  $(txt (slag (add (lent sep) i) `tape`txt))  :: keep splitting the part after the sep
 ::
 :: ++slugify:
 :: Turn a tape into URL-safe slug format
