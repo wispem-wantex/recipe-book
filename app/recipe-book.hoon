@@ -107,7 +107,7 @@
             :-  "Recipes ({<src.bowl>}"
             %+  weld
               ;+  ;h2: from {<src.bowl>}
-            =/  renderer  ~(recipe-list food-tpl (load-state state.resp.act))
+            =/  renderer  ~(recipe-list food-tpl [(load-state state.resp.act) src.bowl])
             (renderer(base-path "/apps/recipe-book/pals/{<src.bowl>}") %.n)
         ==
         ::
@@ -131,7 +131,7 @@
                   ;input(type "submit", value "Make your own copy");
                 ==
               ==
-            (~(recipe-detail food-tpl (load-state state.resp.act)) recipe-id.resp.act %.n)
+            (~(recipe-detail food-tpl [(load-state state.resp.act) src.bowl]) recipe-id.resp.act %.n)
         ==
         ::
           %copy-recipe
@@ -411,6 +411,16 @@
                 ;input(type "text", name "name", value (trip name:food));
               ==
               ;div(class "labelled-input")
+                ;label
+                  ;span(class "mass-title-parent")
+                    ; (?)
+                    ;div(class "title"): Mass of one 'unit' of this food
+                  ==
+                  ; Mass:
+                ==
+                ;input(type "text", name "mass", value (format:fmt mass:food));
+              ==
+              ;div(class "labelled-input")
                 ;label: Calories:
                 ;input(type "text", name "calories", value (format:fmt calories:food));
               ==
@@ -429,16 +439,6 @@
               ;div(class "labelled-input")
                 ;label: Sugar:
                 ;input(type "text", name "sugar", value (format:fmt sugar:food));
-              ==
-              ;div(class "labelled-input")
-                ;label
-                  ;span(class "mass-title-parent")
-                    ; (?)
-                    ;div(class "title"): Mass of one 'unit' of this food
-                  ==
-                  ; Mass:
-                ==
-                ;input(type "text", name "mass", value (format:fmt mass:food));
               ==
               ;input(type "submit", value "Save");
             ==
@@ -465,7 +465,7 @@
         %-  send
           =;  sailhtml
             [200 ~ (render-sail-html "Recipes" sailhtml)]
-          (~(recipe-list food-tpl state) %.y)
+          (~(recipe-list food-tpl [state our.bowl]) %.y)
       ==
       ::
         [%apps %recipe-book %recipes %new ~]
@@ -514,7 +514,7 @@
           %-  send
             =;  sailhtml=marl
               [200 ~ (render-sail-html (trip name.the-recipe) sailhtml)]
-            (~(recipe-detail food-tpl state) the-id %.y)
+            (~(recipe-detail food-tpl [state our.bowl]) the-id %.y)
         ==
         ::
           [%add-instr ~]

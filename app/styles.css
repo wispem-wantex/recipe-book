@@ -22,6 +22,15 @@ input[type='text'], select, textarea {
     margin: 0 0.5em 0 0.2em;
 }
 
+div.nothing {
+	/* Used because the Hoon type checker requires a `manx` sometimes (can't use ~) */
+	display: none;
+}
+
+button#share-this-recipe {
+    margin: 0em 0 1em 0.2em;
+}
+
 div.labelled-input {
     display: flex;
 }
