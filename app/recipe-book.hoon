@@ -637,41 +637,39 @@
         %-  send  [302 ~ [%redirect (crip the-path)]]
       ==
       ::
-        [%apps %recipe-book %pals @ ~]
-      =/  pal  (rash (snag 3 `(list @t)`site) ;~(pfix sig crub:so))
-      ?>  =(-.pal %p)  :: make sure it parsed as a ship-name
-      ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
-          %'GET'
-        :_  state
-        =/  data=action:food-actions  [%req eyre-id [%list-recipes ~]]
-        :~
-          [%pass /whatever %agent [`@p`+.pal %recipe-book] %poke %recipe-action !>(data)]
+        [%apps %recipe-book %pals @ *]
+      =/  pal=@p  (rash (snag 3 `(list @t)`site) ;~(pfix sig fed:ag))
+      :_  state
+      ?+  (slag 4 `(list @t)`site)  (send [404 ~ [%stock ~]])
+          [~]
+        ?+  method.request.inbound-request  (send [405 ~ [%stock ~]])
+            %'GET'
+          =/  data=action:food-actions  [%req eyre-id [%list-recipes ~]]
+          :~
+            [%pass /whatever %agent [pal %recipe-book] %poke %recipe-action !>(data)]
+          ==
         ==
-      ==
-      ::
-        [%apps %recipe-book %pals @ %recipes @ ~]
-      =/  pal  (rash (snag 3 `(list @t)`site) ;~(pfix sig crub:so))
-      ?>  =(-.pal %p)  :: make sure it parsed as a ship-name
-      =/  the-id=@t  (de:recp-id (snag 5 `(list @t)`site))
-      ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
-          %'GET'
-        :_  state
-        =/  data=action:food-actions  [%req eyre-id [%get-recipe the-id]]
-        :~
-          [%pass /whatever %agent [`@p`+.pal %recipe-book] %poke %recipe-action !>(data)]
-        ==
-      ==
-      ::
-        [%apps %recipe-book %pals @ %recipes @ %copy ~]
-      =/  pal  (rash (snag 3 `(list @t)`site) ;~(pfix sig crub:so))
-      ?>  =(-.pal %p)  :: make sure it parsed as a ship-name
-      =/  the-id=@t  (de:recp-id (snag 5 `(list @t)`site))
-      ?+  method.request.inbound-request  [(send [405 ~ [%stock ~]]) state]
-          %'POST'
-        :_  state
-        =/  data=action:food-actions  [%req eyre-id [%copy-recipe the-id]]
-        :~
-          [%pass /whatever %agent [`@p`+.pal %recipe-book] %poke %recipe-action !>(data)]
+        ::
+          [%recipes @ *]
+        =/  the-id=@t  (de:recp-id (snag 5 `(list @t)`site))
+        ?+  (slag 6 `(list @t)`site)  (send [404 ~ [%stock ~]])
+            [~]
+          ?+  method.request.inbound-request  (send [405 ~ [%stock ~]])
+              %'GET'
+            =/  data=action:food-actions  [%req eyre-id [%get-recipe the-id]]
+            :~
+              [%pass /whatever %agent [pal %recipe-book] %poke %recipe-action !>(data)]
+            ==
+          ==
+          ::
+            [%copy ~]
+          ?+  method.request.inbound-request  (send [405 ~ [%stock ~]])
+              %'POST'
+            =/  data=action:food-actions  [%req eyre-id [%copy-recipe the-id]]
+            :~
+              [%pass /whatever %agent [pal %recipe-book] %poke %recipe-action !>(data)]
+            ==
+          ==
         ==
       ==
     ==
