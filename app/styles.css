@@ -18,7 +18,7 @@ main {
     height: fit-content;
 }
 
-input[type='text'], select, textarea {
+input[type='text'], select, textarea, span.select2-container {
     margin: 0 0.5em 0 0.2em;
 }
 

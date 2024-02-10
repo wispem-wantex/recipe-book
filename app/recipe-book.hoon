@@ -221,9 +221,14 @@
   %-  crip  %-  en-xml:html
   ;html
     ;head
+      ;title: {title} | Recipe book
       ;link(rel "stylesheet", href "/apps/recipe-book/static/styles/css");
       ;link(rel "icon", href "/apps/recipe-book/static/chili-garlic/png");
-      ;title: {title} | Recipe book
+      ::
+      :: JQuery: use Select2 plugin to make comboboxes
+      ;script(src "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js", integrity "sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=", crossorigin "anonymous");
+      ;script(src "https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js", integrity "sha256-9yRP/2EFlblE92vzCA10469Ctd0jT48HnmmMw5rJZrA=", crossorigin "anonymous");
+      ;link(rel "stylesheet", href "https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css", integrity "sha256-zaSoHBhwFdle0scfGEFUCwggPN7F+ip9XRglo8IWb4w=", crossorigin "anonymous");
     ==
     ;body
       ;nav

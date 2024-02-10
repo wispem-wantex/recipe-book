@@ -88,9 +88,7 @@
     ==
     ;form(action (weld (en:recp-path:food-utils recipe) "/add-ingredient"), method "POST", class "add-ingr")
       ;label: Ingredient:
-      ;input(type "hidden", name "food-id", id "foodIdInput");
-      ;input(type "text", list "ingredientOptions", name "food-name", id "foodNameInput");
-      ;datalist(id "ingredientOptions")
+      ;select(name "food-id", id "foodIdSelect")
         ;*  %+  turn  ~(val by foods:state)
           |=  [=food]
           ;option(value (a-co:co id.food)): {(trip name.food)}
@@ -136,14 +134,7 @@
         },
       });
 
-      foodNameInput.addEventListener("input",
-        (e) => {
-          const id = e.target.value;
-          const display_text = document.querySelector("#ingredientOptions [value='" + id + "']").innerText;
-          foodIdInput.value = id;
-          foodNameInput.value = display_text;
-        }
-      )
+      $('#foodIdSelect').select2();
       '''
   ==
 ::
