@@ -231,30 +231,37 @@
     =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
     =/  the-id=recipe-id  (de:recp-id:food-utils '80345cb237c34773')
     =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
-    ::  Rename the recipe
-    =/  [=cards next2=agent]
-      %+  ~(on-poke next fake-bowl)
-        %handle-http-request
-      !>  ^-  [@ta inbound-request:eyre]
-      :-  'some eyre id whatever'
-      [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/80345cb237c34773/add-ingredient' ~ `(as-octs:mimes:html 'food-id=9&amount=300&units=ct')]
-    ;:  weld
-      :: Check HTTP response
-      %+  expect-redirected-to  cards  '/apps/recipe-book/recipes/80345cb237c34773'
-      :: Check state updates
-      =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
+    =/  test-cases=(list [req-data=@t expected-new-ingr=ingredient])  :~
+          ['food-id=9&amount=300&units=ct' [food-id=9 amount=[.300 %ct]]]
+          ['food-id=9&amount=3.3&units=g' [food-id=9 amount=[.3.3 %g]]]
+        ==
+    %-  zing  %+  turn  test-cases
+      |=  [req-data=@t expected-new-ingr=ingredient]
+      ^-  tang
+      ::  Add an ingredient
+      =/  [=cards next2=agent]
+        %+  ~(on-poke next fake-bowl)
+          %handle-http-request
+        !>  ^-  [@ta inbound-request:eyre]
+        :-  'some eyre id whatever'
+        [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/80345cb237c34773/add-ingredient' ~ `(as-octs:mimes:html req-data)]
       ;:  weld
-        %+  expect-eq  !>((add 1 (lent ingredients.initial-recipe)))  !>((lent ingredients.new-recipe))
-        %+  expect-eq  !>(`ingredient`[food-id=9 amount=[.300 %ct]])  !>((rear ingredients.new-recipe))
+        :: Check HTTP response
+        %+  expect-redirected-to  cards  '/apps/recipe-book/recipes/80345cb237c34773'
+        :: Check state updates
+        =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
+        ;:  weld
+          %+  expect-eq  !>((add 1 (lent ingredients.initial-recipe)))  !>((lent ingredients.new-recipe))
+          %+  expect-eq  !>(expected-new-ingr)  !>((rear ingredients.new-recipe))
+        ==
       ==
-    ==
   ::
   ::  Delete ingredient
   ++  test-recipe-delete-ingredient
     =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
     =/  the-id=recipe-id  (de:recp-id:food-utils '80345cb237c34773')
     =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
-    ::  Rename the recipe
+    ::  Delete an ingredient
     =/  [=cards next2=agent]
       %+  ~(on-poke next fake-bowl)
         %handle-http-request
@@ -281,7 +288,7 @@
     =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
     =/  the-id=recipe-id  (de:recp-id:food-utils '80345cb237c34773')
     =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
-    ::  Rename the recipe
+    ::  Add an instruction
     =/  [=cards next2=agent]
       %+  ~(on-poke next fake-bowl)
         %handle-http-request
@@ -304,7 +311,7 @@
     =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
     =/  the-id=recipe-id  (de:recp-id:food-utils 'de32bc69c2e6b69f')
     =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
-    ::  Rename the recipe
+    ::  Delete an instruction
     =/  [=cards next2=agent]
       %+  ~(on-poke next fake-bowl)
         %handle-http-request
@@ -336,7 +343,7 @@
     =/  next=agent  +:[~(on-init recipe-book fake-bowl)]  :: Init the agent
     =/  the-id=recipe-id  (de:recp-id:food-utils 'de32bc69c2e6b69f')
     =/  initial-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next)) the-id)
-    ::  Rename the recipe
+    ::  Move an instruction
     =/  [=cards next2=agent]
       %+  ~(on-poke next fake-bowl)
         %handle-http-request

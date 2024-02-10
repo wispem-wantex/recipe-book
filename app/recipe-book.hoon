@@ -583,7 +583,7 @@
           =/  new-ingredient=ingredient
             :-
               food-id=(scan (trip (need (get-form-value (need data) 'food-id'))) dem)
-            :-  (sun:rs (scan (trip (need (get-form-value (need data) 'amount'))) dem))
+            :-  (unformat:fmt (need (get-form-value (need data) 'amount')))
               ?+  (need (get-form-value (need data) 'units'))  !!
                   %g
                 %g
