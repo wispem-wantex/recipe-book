@@ -150,11 +150,12 @@
           [their-food(id new-id) i(food-id new-id)]
         =/  new-recipe
           %_  old-recipe
-            id  (mod (add eny.bowl id.old-recipe) 0x1.0000.0000.0000.0000)
-            ingredients  (turn new-foods |=([=food =ingredient] ingredient))
-            provenance  ?~  provenance.old-recipe
-              [~ [src.bowl id.old-recipe]]
-            provenance.old-recipe
+            id                (mod (add eny.bowl id.old-recipe) 0x1.0000.0000.0000.0000)
+            last-modified-at  `now.bowl
+            ingredients       (turn new-foods |=([=food =ingredient] ingredient))
+            provenance        ?~  provenance.old-recipe
+                                [~ [src.bowl id.old-recipe]]
+                              provenance.old-recipe
           ==
         :_
           %=  this
@@ -515,6 +516,7 @@
         =/  =recipe  *recipe
         =.  name.recipe  name
         =.  id.recipe  (mod eny.bowl 0x1.0000.0000.0000.0000)
+        =.  created-at.recipe  now.bowl
         :-
           %-  send  [302 ~ [%redirect (crip (en:recp-path recipe))]]
         %=  state
@@ -550,7 +552,10 @@
           %=  state
             recipes  %+  ~(put by recipes)
               the-id
-            the-recipe(instructions (snoc instructions:the-recipe (need (get-form-value (need data) 'instr'))))
+            %_  the-recipe
+              instructions      (snoc instructions:the-recipe (need (get-form-value (need data) 'instr')))
+              last-modified-at  `now.bowl
+            ==
           ==
         ==
         ::
@@ -566,10 +571,11 @@
               the-id
             :: Oust the moved ingredient from "from-index" and put it at "to-index"
             %=  the-recipe
-              instructions  %:  into
-                (oust [from-index 1] instructions:the-recipe)
-                to-index
-                (snag from-index instructions:the-recipe)
+              last-modified-at  `now.bowl
+              instructions      %:  into
+                                  (oust [from-index 1] instructions:the-recipe)
+                                  to-index
+                                  (snag from-index instructions:the-recipe)
               ==
             ==
           ::`(list ingredient)`(move-list-item instructions:the-recipe from-index to-index))
@@ -585,7 +591,10 @@
           %=  state
             recipes  %+  ~(put by recipes)
               the-id
-            the-recipe(instructions (oust [instruction-index 1] instructions:the-recipe))
+            %_  the-recipe
+              last-modified-at  `now.bowl
+              instructions      (oust [instruction-index 1] instructions:the-recipe)
+            ==
           ==
         ==
         ::
@@ -607,7 +616,10 @@
           %=  state
             recipes  %+  ~(put by recipes)
               id.the-recipe
-            the-recipe(ingredients (snoc ingredients:the-recipe new-ingredient))
+            %_  the-recipe
+              last-modified-at  `now.bowl
+              ingredients       (snoc ingredients:the-recipe new-ingredient)
+            ==
           ==
         ==
         ::
@@ -620,7 +632,10 @@
           %=  state
             recipes  %+  ~(put by recipes)
               the-id
-            the-recipe(ingredients (oust [ingredient-index 1] ingredients:the-recipe))
+            %_  the-recipe
+              last-modified-at  `now.bowl
+              ingredients       (oust [ingredient-index 1] ingredients:the-recipe)
+            ==
           ==
         ==
         ::
@@ -635,7 +650,10 @@
           %=  state
             recipes  %+  ~(put by recipes)
               the-id
-            the-recipe(name (need (get-form-value (need data) 'new-name')))
+            %_  the-recipe
+              last-modified-at  `now.bowl
+              name              (need (get-form-value (need data) 'new-name'))
+            ==
           ==
         ==
       ==

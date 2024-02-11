@@ -4,7 +4,7 @@
 ::
 :: Create a fake bowl to use for the tests
 =/  fake-bowl  %*  .  *bowl:gall
-    now  ~2024.1.1
+    now  ~1500.8.8
     eny  `@uvJ`0x1111.2222.3333.4444.5555.6666.7777.8888
   ==
 ::
@@ -169,7 +169,9 @@
       ;:  weld
         %+  expect-lent  ~(val by recipes)  3
         %-  expect  !>((~(has by recipes) the-id))
-        %+  expect-eq  !>(id:(~(got by recipes) the-id))  !>(the-id)
+        %+  expect-eq  !>(the-id)  !>(id:(~(got by recipes) the-id))
+        %+  expect-eq  !>(now.fake-bowl)  !>(created-at:(~(got by recipes) the-id))
+        %+  expect-eq  !>(`(unit @da)`[~])  !>(last-modified-at:(~(got by recipes) the-id))
         tangs
       ==
       :: Check HTTP response
@@ -217,10 +219,11 @@
         !>  ^-  [@ta inbound-request:eyre]
         :-  'some eyre id whatever'
         [%.y %.y *address:eyre %'POST' '/apps/recipe-book/recipes/80345cb237c34773/rename' ~ `(as-octs:mimes:html 'new-name=How+to+not+use+this+app+%3A%29')]
+      =/  =recipes  recipes:(get-recipes-from-agent next2)
       ;:  weld
         :: Check state updates
-        =/  =recipes  recipes:(get-recipes-from-agent next2)
         %+  expect-eq  !>('How to not use this app :)')  !>(name:(~(got by recipes) the-id))
+        %+  expect-eq  !>(`(unit @da)`[~ now.fake-bowl])  !>(last-modified-at:(~(got by recipes) the-id))
         :: Check HTTP response
         %+  expect-redirected-to  cards  '/apps/recipe-book/recipes/80345cb237c34773'
       ==
@@ -253,6 +256,7 @@
         ;:  weld
           %+  expect-eq  !>((add 1 (lent ingredients.initial-recipe)))  !>((lent ingredients.new-recipe))
           %+  expect-eq  !>(expected-new-ingr)  !>((rear ingredients.new-recipe))
+          %+  expect-eq  !>(`(unit @da)`[~ now.fake-bowl])  !>(last-modified-at:new-recipe)
         ==
       ==
   ::
@@ -275,7 +279,9 @@
       =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
       ;:  weld
         %+  expect-eq  !>((sub (lent ingredients.initial-recipe) 1))  !>((lent ingredients.new-recipe))
-        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 1..end is now in position 0..end-1
+        %+  expect-eq  !>(`(unit @da)`[~ now.fake-bowl])  !>(last-modified-at:new-recipe)
+        :: Check that each item in `initial-recipe` from 1..end is now in position 0..end-1
+        ^-  tang  %-  zing  %+  turn
           `(list @)`(gulf 0 (dec (lent ingredients.new-recipe)))
           |=  [i=@]
           ^-  tang
@@ -303,6 +309,7 @@
       ;:  weld
         %+  expect-eq  !>((add 1 (lent instructions.initial-recipe)))  !>((lent instructions.new-recipe))
         %+  expect-eq  !>('Blah blah blah something, something else!')  !>((rear instructions.new-recipe))
+        %+  expect-eq  !>(`(unit @da)`[~ now.fake-bowl])  !>(last-modified-at:new-recipe)
       ==
     ==
   ::
@@ -325,12 +332,15 @@
       =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
       ;:  weld
         %+  expect-eq  !>((sub (lent instructions.initial-recipe) 1))  !>((lent instructions.new-recipe))
-        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 0..3 is unchanged
+        %+  expect-eq  !>(`(unit @da)`[~ now.fake-bowl])  !>(last-modified-at:new-recipe)
+        :: Check that each item in `initial-recipe` from 0..3 is unchanged
+        ^-  tang  %-  zing  %+  turn
           `(list @)`(gulf 0 3)
           |=  [i=@]
           ^-  tang
           %+  expect-eq  !>((snag i instructions.new-recipe))  !>((snag i instructions.initial-recipe))
-        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 5..end is now in position 4..end-1
+        :: Check that each item in `initial-recipe` from 5..end is now in position 4..end-1
+        ^-  tang  %-  zing  %+  turn
           `(list @)`(gulf 5 (dec (lent instructions.new-recipe)))
           |=  [i=@]
           ^-  tang
@@ -357,18 +367,23 @@
       =/  new-recipe=recipe  (~(got by recipes:(get-recipes-from-agent next2)) the-id)
       ;:  weld
         %+  expect-eq  !>((lent instructions.initial-recipe))  !>((lent instructions.new-recipe))
-        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 0..0 is unchanged
+        %+  expect-eq  !>(`(unit @da)`[~ now.fake-bowl])  !>(last-modified-at:new-recipe)
+        :: Check that each item in `initial-recipe` from 0..0 is unchanged
+        ^-  tang  %-  zing  %+  turn
           `(list @)`(gulf 0 0)
           |=  [i=@]
           ^-  tang
           %+  expect-eq  !>((snag i instructions.new-recipe))  !>((snag i instructions.initial-recipe))
+        :: Check that item 4 is moved to position 1
         %+  expect-eq  !>((snag 1 instructions.new-recipe))  !>((snag 4 instructions.initial-recipe))
-        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 1..3 is moved ahead 1 position
+        :: Check that each item in `initial-recipe` from 1..3 is moved ahead 1 position
+        ^-  tang  %-  zing  %+  turn
           `(list @)`(gulf 1 3)
           |=  [i=@]
           ^-  tang
           %+  expect-eq  !>((snag +(i) instructions.new-recipe))  !>((snag i instructions.initial-recipe))
-        ^-  tang  %-  zing  %+  turn  :: Check that each item in `initial-recipe` from 5..end is unchanged
+        :: Check that each item in `initial-recipe` from 5..end is unchanged
+        ^-  tang  %-  zing  %+  turn
           `(list @)`(gulf 5 (dec (lent instructions.new-recipe)))
           |=  [i=@]
           ^-  tang
