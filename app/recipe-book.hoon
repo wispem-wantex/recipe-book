@@ -421,7 +421,7 @@
                     ; (?)
                     ;div(class "title"): Mass of one serving or 'unit' of this food
                   ==
-                  ; Mass:
+                  ; Serving size (grams):
                 ==
                 ;input(type "text", name "mass", value (format:fmt mass:food));
               ==
