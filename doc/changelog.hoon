@@ -13,4 +13,9 @@
     'Added share recipe button'
     'Visual improvements'
   ==
+  :-  [1 0 4]  :~
+    'UI improvement: engredient selector box now uses a proper combo-box (dropdown with edit-select)'
+    'New units: lbs, oz, ml, cups, tsp, tbsp, fl oz'
+    'Rename "count" to "servings"'
+  ==
 ==

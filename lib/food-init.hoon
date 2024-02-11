@@ -168,8 +168,9 @@
   (de:recp-id '80345cb237c34773')
 ++  help-instrs
   ^-  (list @t)
-  :~  'Try adding an ingredient to the recipe! Start typing the ingredient name, then pick the right one from the dropdown menu.\0a\0aFor example, try typing "chicken" to filter for chicken options, and add your favorite type of chicken.'
-      'Next, enter the amount of that ingredient by typing a number and picking a unit from the dropdown.\0a\0aUnits can be either a "count" (like "2 bananas", so you would type "2" and pick "count"), or a measurement (like "200 grams of ground beef", so you would type "200" and pick "g").'
+  :~  'This isn\'t a real recipe, it\'s just a sandbox for you to play in. (It can get reset, so don\'t put an important recipe here.)'
+      'Try adding an ingredient to the recipe! Start typing the ingredient name, then pick the right one from the dropdown menu.\0a\0aFor example, try typing "chicken" to filter for chicken options, and add your favorite type of chicken.'
+      'Next, enter the amount of that ingredient by typing a number and picking a unit from the dropdown.\0a\0aUnits can be either a number of servings/items (like "2 bananas", so you would type "2" and pick "servings"), or a measurement (like "2 cups of milk", so you would type "2" and pick "cups").'
       'Press "Add ingredient" to add it to the recipe.'
       'The nutritional information of the recipe will be computed automatically.'
       'You can add instructions for the recipe. Just enter them into the box at the bottom of the page, one at a time, pressing "Add instruction".'
