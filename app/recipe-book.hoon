@@ -315,6 +315,18 @@
             ;a(href "/apps/recipe-book/recipes"): here
             ; .
           ==
+          ;hr;
+          =/  =version-number:changelog  -:(rear the-changelog)
+          ;footer
+            ;p
+              ; App version:
+              ; {<major.version-number>}.{<minor.version-number>}.{<patch.version-number>}
+            ==
+            ;p
+              ; State version:
+              ; {"{<-:state>}"}
+            ==
+          ==
         ==
       ::
         [%apps %recipe-book %help ~]
