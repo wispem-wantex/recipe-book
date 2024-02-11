@@ -78,20 +78,36 @@
       iron=.0.0
       zinc=.0.0
       mass=(unformat:fmt (find-item 'mass'))
-      density=.-1.0
+      ^=  density  =/  parse-result  %-  mule  |.  (unformat:fmt (find-item 'density'))
+        :: Use `mule` to handle potentially empty-string input (default densities render as "")
+        :: Thus, unformatting them will crash
+        ?-  -.parse-result
+          %&  [~ +.parse-result]
+          %|  [~]
+        ==
       price=.0.0
       cook-ratio=.0
   ==
 ::
-:: Convert an ingredient to a pair [amount=@rs =food]
+:: Convert an ingredient to a pair [amount=@rs =food], with `amount` denominated in servings (%ct)
 +$  normalized-ingredient  [amount=@rs =food]
 ++  normalize-ingredient
   |=  [i=ingredient all-foods=foods]
   ^-  normalized-ingredient
   =/  base-food  (~(got by all-foods) food-id:i)
+  =/  density=@rs  (fall density.base-food .1)
   ?-  units.amount.i
-    %g     [amount=(div:rs -:amount:i mass:base-food) food=base-food]
-    %ct    [amount=-:amount:i food=base-food]
+    %ct     [amount=-:amount:i food=base-food]
+    :: Mass
+    %g      [amount=(div:rs -:amount:i mass:base-food) food=base-food]
+    %lbs    [amount=(div:rs (mul:rs .454 -:amount:i) mass:base-food) food=base-food]
+    %oz     [amount=(div:rs (mul:rs .28.3495 -:amount:i) mass:base-food) food=base-food]
+    :: Volume
+    %ml     [amount=(div:rs (mul:rs density -:amount:i) mass:base-food) food=base-food]
+    %cups   [amount=(div:rs (mul:rs .250 (mul:rs density -:amount:i)) mass:base-food) food=base-food]
+    %tsp    [amount=(div:rs (mul:rs .5 (mul:rs density -:amount:i)) mass:base-food) food=base-food]
+    %tbsp   [amount=(div:rs (mul:rs .15 (mul:rs density -:amount:i)) mass:base-food) food=base-food]
+    %fl-oz  [amount=(div:rs (mul:rs .30 (mul:rs density -:amount:i)) mass:base-food) food=base-food]
   ==
 ::
 :: Compute the nutrition for an ingredient
@@ -125,7 +141,7 @@
       iron=.0.0
       zinc=.0.0
       mass=.100.0
-      density=.-1.0
+      density=[~]
       price=.0.0
       cook-ratio=.0
   ==

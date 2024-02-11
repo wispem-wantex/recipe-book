@@ -5,25 +5,24 @@
 |%
   ++  sample-state-0
     ^-  state:v0
+    =/  initial-foods=(list food:v0)  :~
+        [id=37 name='onion' calories=.88.0 carbs=.20.0 protein=.2.0 fat=.0.0 sugar=.9.0 alcohol=.0.0 water=.0.0 potassium=.0.312 sodium=.0.008 calcium=.0.023 magnesium=.0.01 phosphorus=.0.029 iron=.0.0002 zinc=.0.0002 mass=.220.0 density=.-1.0 price=.17.0 cook-ratio=.0.62]
+        [id=92 name='butter' calories=.714.0 carbs=.0.0 protein=.1.0 fat=.81.0 sugar=.0.0 alcohol=.0.0 water=.0.0 potassium=.0.02 sodium=.0.7 calcium=.0.024 magnesium=.0.002 phosphorus=.0.024 iron=.0.0 zinc=.0.0001 mass=.100.0 density=.0.911 price=.95.0 cook-ratio=.0]
+        [id=239 name='salt' calories=.0.0 carbs=.0.0 protein=.0.0 fat=.0.0 sugar=.0.0 alcohol=.0.0 water=.0.0 potassium=.0.0 sodium=.40.0 calcium=.0.0 magnesium=.0.0 phosphorus=.0.0 iron=.0.0 zinc=.0.0 mass=.100.0 density=.2.2 price=.17.0 cook-ratio=.0]
+        [id=245 name='chili flakes' calories=.307.0 carbs=.28.0 protein=.12.0 fat=.16.0 sugar=.10.0 alcohol=.0.0 water=.0.0 potassium=.1.9 sodium=.0.03 calcium=.0.0 magnesium=.0.0 phosphorus=.0.0 iron=.0.0 zinc=.0.0 mass=.100.0 density=.0.357 price=.300.0 cook-ratio=.0]
+        [id=3.000 name='chicken stock' calories=.22 carbs=.0.4 protein=.2.2 fat=.1.2 sugar=.0.2 alcohol=.0.0 water=.0.0 potassium=.0.105 sodium=.0.140 calcium=.0.003 magnesium=.0.0 phosphorus=.0.0 iron=.0.0002 zinc=.0.0 mass=.100.0 density=.1.0 price=.0.0 cook-ratio=.1.0]
+      ==
     :*  %0
-        (molt (turn initial-foods:food-init |=(f=food `(pair food-id food)`[id.f f])))
+        (molt (turn initial-foods |=(f=food:v0 `(pair food-id:v0 food:v0)`[id.f f])))
         %-  molt  :~
-          =/  id=recipe-id  (de:recp-id 'de32bc69c2e6b69f')
+          =/  id=recipe-id:v0  (de:recp-id 'de32bc69c2e6b69f')
           :-  id
           ^-  recipe:v0
           :: Create a default recipe as a welcome
-          =/  ingredients  ^-  (list ingredient)
+          =/  ingredients  ^-  (list ingredient:v0)
             :~  [food-id=37 amount=[rs=.2 units=%ct]]
                 [food-id=92 amount=[rs=.30 units=%g]]
-                [food-id=20 amount=[rs=.30 units=%g]]
-                [food-id=41 amount=[rs=.40 units=%g]]
-                [food-id=121 amount=[rs=.800 units=%g]]
-                [food-id=75 amount=[rs=.450 units=%g]]
-                [food-id=6 amount=[rs=.300 units=%g]]
-                [food-id=98 amount=[rs=.150 units=%g]]
-                [food-id=101 amount=[rs=.150 units=%g]]
                 [food-id=239 amount=[rs=.2 units=%g]]
-                [food-id=241 amount=[rs=.2 units=%g]]
                 [food-id=245 amount=[rs=.5 units=%g]]
                 [food-id=3.000 amount=[rs=.1000 units=%g]]
             ==
@@ -47,7 +46,7 @@
           :: The help recipe
           :-  help-recipe-id:food-init
           ^-  recipe:v0
-          =/  ingredients  ^-  (list ingredient)
+          =/  ingredients  ^-  (list ingredient:v0)
             :~  [food-id=44 amount=[rs=.300 units=%g]]
                 [food-id=10 amount=[rs=.200 units=%g]]
             ==
@@ -76,5 +75,21 @@
     %+  expect-eq  !>(ingredients:(~(got by recipes.new-state) help-recipe-id:food-init))
                    !>(ingredients:(~(got by recipes.state0) help-recipe-id:food-init))
     %+  expect-eq  !>('')  !>(blurb:(~(got by recipes.new-state) help-recipe-id:food-init))
+  ==
+++  test-state-1-to-2
+  =/  state0=state:v0  sample-state-0
+  =/  state1=state:v1  (from-v0:v1 state0)
+  =/  state2=state:v2  (from-v1:v2 state1)
+  ;:  weld
+    :: ".-1" default densities should be converted to empty units
+    %+  expect-eq  !>(`(unit @rs)`[~])  !>(density:(~(got by foods.state2) 37))
+    :: non-default densities should become units of themselves
+    %+  expect-eq  !>(`(unit @rs)`[~ .0.911])  !>(density:(~(got by foods.state2) 92))
+    %+  expect-eq  !>(`(unit @rs)`[~ .1])  !>(density:(~(got by foods.state2) 3.000))
+    ::
+    :: Recipes should have a comments field
+    %+  expect-eq  !>(`(list [author=@p posted-at=@da txt=@t])`[~])  !>(comments:(~(got by recipes.state2) (de:recp-id 'de32bc69c2e6b69f')))
+    :: Recipes should have a last-modified-at field
+    %+  expect-eq  !>(`(unit @da)`[~])  !>(last-modified-at:(~(got by recipes.state2) (de:recp-id 'de32bc69c2e6b69f')))
   ==
 --

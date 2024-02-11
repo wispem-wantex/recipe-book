@@ -71,7 +71,7 @@
         :~  [%pass /whatever %agent [src.bowl %recipe-book] %poke %recipe-action !>(resp)]  ==
       ?-  -.req.act
           %list-recipes
-        [%resp original-eyre-id.act [%list-recipes [%1 ~ recipes.state]]]
+        [%resp original-eyre-id.act [%list-recipes [%2 ~ recipes.state]]]
         ::
           %get-recipe
         =/  the-recipe=recipe
@@ -81,7 +81,7 @@
             |=  [i=ingredient]
             :-  food-id.i
             (~(got by foods:state) food-id.i)
-        [%resp original-eyre-id.act [%get-recipe recipe-id.req.act [%1 filtered-foods (molt :~([recipe-id.req.act the-recipe]))]]]
+        [%resp original-eyre-id.act [%get-recipe recipe-id.req.act [%2 filtered-foods (molt :~([recipe-id.req.act the-recipe]))]]]
         ::
           %copy-recipe
         =/  the-recipe=recipe
@@ -91,7 +91,7 @@
             |=  [i=ingredient]
             :-  food-id.i
             (~(got by foods:state) food-id.i)
-        [%resp original-eyre-id.act [%copy-recipe recipe-id.req.act [%1 filtered-foods (molt :~([recipe-id.req.act the-recipe]))]]]
+        [%resp original-eyre-id.act [%copy-recipe recipe-id.req.act [%2 filtered-foods (molt :~([recipe-id.req.act the-recipe]))]]]
       ==
       ::
       :: remote ship replied; now render HTML for it
@@ -419,11 +419,16 @@
                 ;label
                   ;span(class "mass-title-parent")
                     ; (?)
-                    ;div(class "title"): Mass of one 'unit' of this food
+                    ;div(class "title"): Mass of one serving or 'unit' of this food
                   ==
                   ; Mass:
                 ==
                 ;input(type "text", name "mass", value (format:fmt mass:food));
+              ==
+              ;div(class "labelled-input")
+                ;label: Density:
+                :: TODO: get rid of ".-1"
+                ;input(type "text", name "density", value (format:fmt (fall density:food .-1)));
               ==
               ;div(class "labelled-input")
                 ;label: Calories:
@@ -584,12 +589,9 @@
             :-
               food-id=(scan (trip (need (get-form-value (need data) 'food-id'))) dem)
             :-  (unformat:fmt (need (get-form-value (need data) 'amount')))
-              ?+  (need (get-form-value (need data) 'units'))  !!
-                  %g
-                %g
-                  %ct
-                %ct
-              ==
+              =/  u  (need (get-form-value (need data) 'units'))
+              ?>  ?=  units  u
+              u
           %=  state
             recipes  %+  ~(put by recipes)
               id.the-recipe

@@ -44,18 +44,13 @@
         ;*  %-  head  %-  spin  :+  ingredients:recipe  0
           |=  [=ingredient index=@]
           :_  +(index)
-          =/  base-food  (need (~(get by foods:state) food-id:ingredient))
-          =/  amount  ?-  units.amount.ingredient
-              %g  (div:rs -:amount:ingredient mass:base-food)
-              %ct  -:amount:ingredient
-            ==
-          =/  units-txt  ?-  units.amount.ingredient
-              %g   "g"
+          =/  norm-i=normalized-ingredient:food-utils  (normalize-ingredient:food-utils ingredient foods:state)
+          =/  base-food  food:norm-i
+          =/  amount  amount:norm-i
+          =/  units-txt
+            ?+  units.amount.ingredient  (trip units.amount.ingredient)
               %ct  ""
-            ==
-          =/  amount-display=@rs  ?-  units.amount.ingredient
-              %g   (mul:rs amount mass:base-food)
-              %ct  amount
+              %fl-oz  "fl oz"
             ==
           ;tr
             ;td
@@ -63,7 +58,7 @@
                 ;input(type "submit", value "\d7", title "Delete ingredient");
               ==
             ==
-            ;td: {(format:fmt amount-display)} {units-txt}
+            ;td: {(format:fmt -.amount.ingredient)} {units-txt}
             ;td(class "ingr-name"): {(trip name:base-food)}
             ;td: {(format:fmt (mul:rs calories:base-food amount))}
             ;td: {(format:fmt (mul:rs carbs:base-food amount))}
@@ -97,8 +92,15 @@
       ;input(type "text", name "amount");
       ;label: Units:
       ;select(name "units")
+        ;option(value "ct"): servings
         ;option(value "g"): g
-        ;option(value "ct"): count
+        ;option(value "lbs"): lbs
+        ;option(value "oz"): oz
+        ;option(value "ml"): ml
+        ;option(value "cups"): cups
+        ;option(value "tsp"): tsp
+        ;option(value "tbsp"): tbsp
+        ;option(value "fl-oz"): fl oz
       ==
       ;input(type "submit", value "Add ingredient");
     ==

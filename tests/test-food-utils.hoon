@@ -1,5 +1,5 @@
 /-  *food
-/+  *test, food-utils
+/+  *test, food-utils, food-init
 ::
 |%
 :: Encode a recipe id as a hex string (@t)
@@ -40,4 +40,37 @@
       !>  `parse-result:food-utils`[~]
       !>  %-  parse-recipe-link:food-utils  "fjwekf"
   ==
+::
+++  test-normalize-ingredient
+  =/  test-cases=(list [=ingredient normalized-amount=@rs])  :~
+        :: Salt, density 2.2 g/ml, mass 100g
+        :-  [food-id=239 amount=[.2 %ct]]  .2
+        :-  [food-id=239 amount=[.100 %g]]  .1
+        :-  [food-id=239 amount=[.1.5 %lbs]]  .6.81
+        :-  [food-id=239 amount=[.3 %oz]]  .0.850485
+        :-  [food-id=239 amount=[.100 %ml]]  .2.20
+        :-  [food-id=239 amount=[.0.25 %cups]]  .1.375
+        :-  [food-id=239 amount=[.4 %tsp]]  .0.44
+        :-  [food-id=239 amount=[.1.3333333 %tbsp]]  .0.44
+        :-  [food-id=239 amount=[.2.6666666 %fl-oz]]  .0.44
+        :: Onions, no density, mass 220g
+        :-  [food-id=239 amount=[.2 %ct]]  .2
+        :-  [food-id=239 amount=[.100 %g]]  .0.454545
+        :-  [food-id=239 amount=[.1.5 %lbs]]  .3.095454
+        :-  [food-id=239 amount=[.3 %oz]]  .0.38658
+        :-  [food-id=239 amount=[.100 %ml]]  .0.454545
+        :-  [food-id=239 amount=[.0.25 %cups]]  .1.13636
+        :-  [food-id=239 amount=[.4 %tsp]]  .0.090909
+        :-  [food-id=239 amount=[.1.333 %tbsp]]  .0.090909
+        :-  [food-id=239 amount=[.2.666 %fl-oz]]  .0.090909
+      ==
+  %-  zing  %+  turn  test-cases
+    |=  [i=ingredient expected-amount=@rs]
+    ^-  tang
+    =/  result=normalized-ingredient:food-utils
+        (normalize-ingredient:food-utils i `foods`(molt (turn initial-foods:food-init |=(f=food `(pair food-id food)`[id.f f]))))
+    %-  expect-eq-float  :+
+      expected-amount
+      amount:result
+      .0.00001
 --

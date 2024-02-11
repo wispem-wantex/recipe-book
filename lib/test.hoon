@@ -30,7 +30,21 @@
 ++  expect
   |=  actual=vase
   (expect-eq !>(%.y) actual)
-
+::
+++  expect-eq-float
+  |=  [expected=@rs actual=@rs tolerance=@rs]
+  ^-  tang
+  =|  result=tang
+  ::
+  =?  result  (gth:rs (sub:rs expected actual) tolerance)
+    %+  weld  result
+    ^-  tang
+    :~  [%palm [": " ~ ~ ~] [leaf+"expected" leaf+(scow %rs expected) ~]]
+        [%palm [": " ~ ~ ~] [leaf+"actual  " leaf+(scow %rs actual) ~]]
+    ==
+  ::
+  result
+::
 ++  expect-lent
   |=  [actual=(list *) len=@]
   (expect-eq !>(len) !>((lent actual)))
